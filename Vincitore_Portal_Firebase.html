@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vincitore — Agency Briefing Portal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#B8973A;--dgold:#8A6E25;--lgold:#FDF6E3;--egold:#F5EDD0;
+  --dark:#0C0B09;--dark2:#1C1912;--cream:#F5F0E8;
+  --text:#1a1a1a;--muted:#666;--border:#e8e4d8;
+  --green:#1E7E34;--red:#C0392B;--blue:#1A4D8A;--orange:#D97706;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+input,select,textarea,button{font-family:inherit}
+
+/* AUTH */
+#authScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--dark),var(--dark2))}
+.auth-card{background:#fff;border-radius:16px;padding:2.5rem;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.auth-logo{text-align:center;margin-bottom:1.75rem}
+.auth-logo img{width:80px;height:80px;object-fit:contain;margin-bottom:10px}
+.auth-logo h1{font-size:16px;font-weight:700;color:var(--dark);letter-spacing:.08em;margin-bottom:3px}
+.auth-logo p{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.auth-error{background:#fff0f0;border:1px solid #fcc;color:var(--red);padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px;display:none}
+.form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;transition:border .2s;margin-bottom:14px}
+.form-input:focus{border-color:var(--gold)}
+.auth-btn{width:100%;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+.auth-btn:hover{background:var(--dgold)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.connecting{text-align:center;color:var(--muted);font-size:13px;padding:1rem}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{background:var(--dark);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-left img{height:38px;object-fit:contain}
+.topbar-divider{color:#444;font-size:18px}
+.topbar-title{font-size:13px;color:#aaa}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-user{font-size:12px;color:#ccc}
+.role-badge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;padding:2px 8px;border-radius:10px}
+.role-sales{background:rgba(30,126,52,.2);color:#4caf7d}
+.role-admin{background:rgba(26,77,138,.2);color:#5b8dd9}
+.role-superadmin{background:rgba(184,151,58,.2);color:var(--gold)}
+.topbar-btn{background:none;border:1px solid #444;color:#aaa;padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .2s}
+.topbar-btn:hover{border-color:#888;color:#fff}
+.topbar-btn.gold{border-color:var(--gold);color:var(--gold)}
+.topbar-btn.gold:hover{background:var(--gold);color:#fff}
+.save-ind{font-size:11px;color:#4caf7d;opacity:0;transition:opacity .5s}
+.main{display:flex;flex:1;min-height:calc(100vh - 56px)}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--border);padding:1rem 0;flex-shrink:0}
+.nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:8px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;margin:1px 8px;border-radius:8px}
+.nav-item:hover{background:var(--lgold);color:var(--dgold)}
+.nav-item.active{background:var(--egold);color:var(--dgold);font-weight:600}
+
+/* CONTENT */
+.content{flex:1;padding:1.5rem;overflow-y:auto;background:var(--cream)}
+.page-header{margin-bottom:1.5rem}
+.ph-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.page-title{font-size:22px;font-weight:600;color:var(--dark)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* CARDS */
+.card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:13px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+
+/* STATS */
+.stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:1.25rem;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.stat-n{font-size:32px;font-weight:700;color:var(--gold);line-height:1}
+.stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--dgold)}
+.btn-outline{background:#fff;color:var(--dgold);border:1.5px solid var(--gold)}.btn-outline:hover{background:var(--lgold)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a02020}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#166028}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-xs{padding:3px 8px;font-size:11px;border-radius:5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.badge-confirmed{background:#e8f5e9;color:var(--green)}
+.badge-attended{background:#e3f2fd;color:var(--blue)}
+.badge-noshow{background:#fce4ec;color:var(--red)}
+.badge-cancelled{background:#f5f5f5;color:#999}
+
+/* VENUE TABS */
+.venue-tabs{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.venue-tab{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;transition:all .15s}
+.venue-tab.active{border-color:var(--gold);background:var(--egold);color:var(--dgold);font-weight:600}
+
+/* CALENDAR GRID */
+.cal-wrap{overflow-x:auto}
+.cal-table{border-collapse:collapse;min-width:100%;font-size:12px}
+.cal-table th{background:var(--dark);color:#fff;padding:10px 8px;text-align:center;font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;border:1px solid #333;min-width:130px}
+.cal-table th.slot-th{background:var(--dgold);min-width:110px}
+.cal-table td{border:1px solid var(--border);padding:4px;vertical-align:top}
+.slot-lbl{background:var(--egold);padding:9px 8px;font-size:11px;font-weight:600;color:var(--dgold);text-align:center;white-space:nowrap}
+.slot-cell{background:#fff;min-height:72px;padding:4px;cursor:pointer;transition:background .15s;border-radius:4px}
+.slot-cell:hover{background:var(--lgold)}
+.slot-cell.is-full{background:#fff5f5;cursor:default}.slot-cell.is-full:hover{background:#fff5f5}
+.slot-count{font-size:10px;color:var(--muted);margin-bottom:3px}
+.pax-bar{height:4px;background:#eee;border-radius:2px;margin-top:4px;overflow:hidden}
+.pax-fill{height:100%;border-radius:2px;transition:width .3s}
+.bk-chip{border-radius:4px;padding:3px 6px;margin:2px 0;font-size:10px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bk-chip.mine{background:#e8f5e9;border:1px solid #b2dfdb;color:var(--green)}
+.bk-chip.other{background:var(--lgold);border:1px solid #e8d9a0;color:var(--dgold)}
+.bk-chip.masked{background:#f5f5f5;border:1px solid #e0e0e0;color:#aaa}
+.add-btn{display:flex;align-items:center;justify-content:center;border:1.5px dashed #ddd;border-radius:4px;padding:5px;color:#aaa;font-size:11px;cursor:pointer;transition:all .15s;margin-top:3px}
+.add-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-hdr{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.modal-body{padding:1.5rem}
+.modal-foot{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
+.fg label.req::after{content:" *";color:var(--red)}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;transition:border .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg .hint{font-size:11px;color:var(--muted);margin-top:3px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.alert-info{background:#e3f2fd;border:1px solid #bbdefb;color:var(--blue)}
+.alert-warn{background:#fff8e1;border:1px solid #ffe082;color:var(--orange)}
+.alert-success{background:#e8f5e9;border:1px solid #c8e6c9;color:var(--green)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:9px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);background:var(--lgold)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--lgold)}
+
+/* CONFIG */
+.cfg-section{margin-bottom:1.5rem}
+.cfg-title{font-size:15px;font-weight:600;margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+.venue-cfg{border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--lgold);margin-bottom:.75rem}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty .ei{font-size:40px;margin-bottom:.75rem}
+.empty p{font-size:14px}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem;color:var(--muted)}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img id="authLogo" alt="Vincitore">
+      <h1>VINCITORE REALTY</h1>
+      <p>AGENCY BRIEFING PORTAL · SIP LAUNCH</p>
+    </div>
+    <div id="connectingMsg" class="connecting">⏳ Connecting to database…</div>
+    <div id="loginForm" style="display:none">
+      <div class="auth-error" id="authError">Invalid username or password</div>
+      <label class="form-label">Username</label>
+      <input class="form-input" type="text" id="loginUser" placeholder="Enter username" autocomplete="username">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="loginPass" placeholder="Enter password">
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img id="topbarLogo" alt="Vincitore">
+      <span class="topbar-divider">|</span>
+      <span class="topbar-title">Agency Briefing Portal</span>
+    </div>
+    <div class="topbar-right">
+      <span class="save-ind" id="saveInd">✓ Saved</span>
+      <span class="topbar-user" id="topbarUser"></span>
+      <span class="role-badge" id="topbarRole"></span>
+      <button class="topbar-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="modalTitle">Modal</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// FIREBASE CONFIG — Vincitore Project
+// ═══════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCo6FZCyp7pMXq0cd5N1IoXxT-_D5Gr5V8",
+  authDomain: "vincitore-project.firebaseapp.com",
+  databaseURL: "https://vincitore-project-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "vincitore-project",
+  storageBucket: "vincitore-project.firebasestorage.app",
+  messagingSenderId: "359961024997",
+  appId: "1:359961024997:web:e1ef0d455171252100370c"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ═══════════════════════════════════════════════════════════════════
+// LOGO
+// ═══════════════════════════════════════════════════════════════════
+var LOGO_SRC = 'data:image/png;base64,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';
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+var CU = null; // current user
+var PAGE = 'dashboard';
+var VENUE_IDX = 0;
+var CACHE = { config: null, users: {}, bookings: {} };
+var LISTENERS = [];
+
+// ═══════════════════════════════════════════════════════════════════
+// DEFAULT CONFIG (written to Firebase on first run)
+// ═══════════════════════════════════════════════════════════════════
+var DEFAULT_CONFIG = {
+  eventName: "SIP Launch — Agency Briefing",
+  startDate: "2026-05-04",
+  endDate:   "2026-05-09",
+  slotStart: "10:30",
+  slotEnd:   "18:30",
+  slotDuration: 60,
+  venues: [
+    { id:"v1", name:"Vincitore Sales Centre",                       capacity:50 },
+    { id:"v2", name:"Vincitore Experience Centre – Benessere Arjan", capacity:50 }
+  ]
+};
+
+var DEFAULT_USERS = [
+  { id:"u1", username:"superadmin", password:"Vincitore@2026", name:"Super Admin",  role:"superadmin" },
+  { id:"u2", username:"admin",      password:"Admin@2026",     name:"Admin",        role:"admin"      },
+  { id:"u3", username:"sales1",     password:"Sales@2026",     name:"Sales Rep 1",  role:"sales"      },
+  { id:"u4", username:"sales2",     password:"Sales@2026",     name:"Sales Rep 2",  role:"sales"      },
+  { id:"u5", username:"sales3",     password:"Sales@2026",     name:"Sales Rep 3",  role:"sales"      },
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT — connect and seed if empty
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('authLogo').src = LOGO_SRC;
+document.getElementById('topbarLogo').src = LOGO_SRC;
+
+db.ref('/config').once('value').then(snap => {
+  if (!snap.exists()) {
+    // First run — seed defaults
+    var seed = { config: DEFAULT_CONFIG, users: {}, bookings: {} };
+    DEFAULT_USERS.forEach(u => { seed.users[u.id] = u; });
+    return db.ref('/').set(seed);
+  }
+}).then(() => {
+  // Start listeners
+  startListeners();
+  document.getElementById('connectingMsg').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+}).catch(err => {
+  document.getElementById('connectingMsg').innerHTML = '❌ Connection failed. Check your internet connection.<br><small>'+err.message+'</small>';
+});
+
+function startListeners() {
+  // Config listener
+  var cfgRef = db.ref('/config');
+  cfgRef.on('value', snap => { CACHE.config = snap.val(); if(CU) rerender(); });
+  LISTENERS.push(cfgRef);
+
+  // Users listener
+  var usersRef = db.ref('/users');
+  usersRef.on('value', snap => { CACHE.users = snap.val() || {}; if(CU) rerender(); });
+  LISTENERS.push(usersRef);
+
+  // Bookings listener
+  var bkRef = db.ref('/bookings');
+  bkRef.on('value', snap => { CACHE.bookings = snap.val() || {}; if(CU) rerender(); });
+  LISTENERS.push(bkRef);
+}
+
+function rerender() {
+  var pages = {
+    dashboard: renderDashboard, calendar: renderCalendar,
+    mybookings: renderMyBookings, allbookings: renderAllBookings,
+    agencies: renderAgencies, users: renderUsers, config: renderConfig
+  };
+  if (pages[PAGE]) pages[PAGE]();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function uid() { return 'b' + Date.now() + Math.random().toString(36).substr(2,5); }
+function pad(n) { return n < 10 ? '0'+n : n; }
+
+function getDays() {
+  if (!CACHE.config) return [];
+  var days = [], d = new Date(CACHE.config.startDate + 'T00:00:00');
+  var end = new Date(CACHE.config.endDate + 'T00:00:00');
+  while (d <= end) {
+    var y=d.getFullYear(), mo=d.getMonth()+1, dy=d.getDate();
+    days.push(y+'-'+pad(mo)+'-'+pad(dy));
+    d.setDate(d.getDate()+1);
+  }
+  return days;
+}
+
+function getSlots() {
+  if (!CACHE.config) return [];
+  var slots = [];
+  var [sh,sm] = CACHE.config.slotStart.split(':').map(Number);
+  var [eh,em] = CACHE.config.slotEnd.split(':').map(Number);
+  var cur = sh*60+sm, endM = eh*60+em, dur = parseInt(CACHE.config.slotDuration);
+  while (cur + dur <= endM) {
+    var h1=Math.floor(cur/60), m1=cur%60, h2=Math.floor((cur+dur)/60), m2=(cur+dur)%60;
+    var fmt = h => h%12===0?12:h%12, ap = h => h<12?'AM':'PM';
+    slots.push({ key: pad(h1)+':'+pad(m1), label: fmt(h1)+':'+pad(m1)+ap(h1)+' – '+fmt(h2)+':'+pad(m2)+ap(h2) });
+    cur += dur;
+  }
+  return slots;
+}
+
+function fmtDate(s) {
+  var d = new Date(s+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+function fmtDT(s) {
+  if (!s) return '—';
+  var d = new Date(s);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function getVenue(id) { return (CACHE.config.venues||[]).find(v=>v.id===id); }
+function getUser(id) { return CACHE.users[id]; }
+function allBookings() { return Object.values(CACHE.bookings); }
+function activeBookings() { return allBookings().filter(b=>b.status!=='cancelled'); }
+
+function slotBookings(venueId, date, slotKey) {
+  return activeBookings().filter(b=>b.venueId===venueId&&b.date===date&&b.slotKey===slotKey);
+}
+function slotPax(venueId, date, slotKey) {
+  return slotBookings(venueId,date,slotKey).reduce((s,b)=>s+parseInt(b.attendees||1),0);
+}
+function canSeeDetail(b) {
+  if (!CU) return false;
+  if (CU.role !== 'sales') return true;
+  return b.bookedBy === CU.id;
+}
+
+function showSaved() {
+  var el = document.getElementById('saveInd');
+  if (el) { el.style.opacity='1'; setTimeout(()=>el.style.opacity='0', 1500); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════
+function doLogin() {
+  var u = document.getElementById('loginUser').value.trim();
+  var p = document.getElementById('loginPass').value;
+  var user = Object.values(CACHE.users).find(x=>x.username===u&&x.password===p);
+  if (!user) { document.getElementById('authError').style.display='block'; return; }
+  document.getElementById('authError').style.display='none';
+  CU = user;
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('app').style.flexDirection='column';
+  document.getElementById('topbarUser').textContent = user.name;
+  var rb = document.getElementById('topbarRole');
+  rb.textContent = {sales:'Sales',admin:'Admin',superadmin:'Super Admin'}[user.role];
+  rb.className = 'role-badge role-'+user.role;
+  buildSidebar();
+  navigate('dashboard');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && document.getElementById('loginForm').style.display!=='none') doLogin();
+});
+
+function doLogout() {
+  CU = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginUser').value='';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════════
+function buildSidebar() {
+  var role = CU.role;
+  var items = [
+    {id:'dashboard',   icon:'📊', label:'Dashboard',        roles:['sales','admin','superadmin']},
+    {id:'calendar',    icon:'📅', label:'Booking Calendar', roles:['sales','admin','superadmin']},
+    {id:'mybookings',  icon:'📋', label:'My Bookings',      roles:['sales']},
+    {id:'allbookings', icon:'📋', label:'All Bookings',     roles:['admin','superadmin']},
+    {id:'agencies',    icon:'🏢', label:'Agencies',         roles:['admin','superadmin']},
+    {id:'users',       icon:'👥', label:'Users',            roles:['superadmin']},
+    {id:'config',      icon:'⚙️', label:'Configuration',   roles:['superadmin']},
+  ];
+  var html = '<div class="nav-section-label">Navigation</div>';
+  items.filter(i=>i.roles.includes(role)).forEach(i=>{
+    html += `<div class="nav-item" id="nav-${i.id}" onclick="navigate('${i.id}')">${i.icon} ${i.label}</div>`;
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function navigate(page) {
+  PAGE = page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var nav = document.getElementById('nav-'+page);
+  if (nav) nav.classList.add('active');
+  rerender();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function renderDashboard() {
+  var role = CU.role;
+  var active = activeBookings();
+  var mine = active.filter(b=>b.bookedBy===CU.id);
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">Dashboard</div>
+    <div class="page-sub">${CACHE.config.eventName}</div></div>
+    <div class="actions"><button class="btn btn-gold" onclick="navigate('calendar')">📅 Book a Slot</button></div>
+  </div></div>`;
+
+  if (role==='sales') {
+    html += `<div class="g4" style="margin-bottom:1.25rem">
+      <div class="stat"><div class="stat-n">${mine.length}</div><div class="stat-l">My Bookings</div></div>
+      <div class="stat"><div class="stat-n">${mine.reduce((s,b)=>s+parseInt(b.attendees||1),0)}</div><div class="stat-l">My Total Pax</div></div>
+      <div class="stat"><div class="stat-n">${mine.filter(b=>b.status==='attended').length}</div><div class="stat-l">Attended</div></div>
+      <div class="stat"><div class="stat-n">${mine.filter(b=>b.status==='confirmed').length}</div><div class="stat-l">Upcoming</div></div>
+    </div>`;
+  } else {
+    var totalPax = active.reduce((s,b)=>s+parseInt(b.attendees||1),0);
+    var agencies = [...new Set(active.map(b=>b.agencyName))].length;
+    html += `<div class="g4" style="margin-bottom:1.25rem">
+      <div class="stat"><div class="stat-n">${active.length}</div><div class="stat-l">Total Bookings</div></div>
+      <div class="stat"><div class="stat-n">${totalPax}</div><div class="stat-l">Total Pax</div></div>
+      <div class="stat"><div class="stat-n">${active.filter(b=>b.status==='attended').length}</div><div class="stat-l">Attended</div></div>
+      <div class="stat"><div class="stat-n">${agencies}</div><div class="stat-l">Agencies</div></div>
+    </div>`;
+  }
+
+  // Venue utilisation
+  var days = getDays(), slots = getSlots();
+  html += `<div class="g2" style="margin-bottom:1.25rem">`;
+  (CACHE.config.venues||[]).forEach(v=>{
+    var vb = active.filter(b=>b.venueId===v.id);
+    var vPax = vb.reduce((s,b)=>s+parseInt(b.attendees||1),0);
+    var maxC = slots.length * days.length * v.capacity;
+    var pct = maxC>0 ? Math.round(vPax/maxC*100) : 0;
+    html += `<div class="card">
+      <div class="card-title">🏢 ${v.name}</div>
+      <div style="font-size:22px;font-weight:700;color:var(--gold);margin-bottom:4px">${vb.length} bookings · ${vPax} pax</div>
+      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0">
+        <div style="height:100%;width:${pct}%;background:var(--gold);border-radius:4px"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">${pct}% capacity utilised · ${slots.length} slots/day · ${days.length} days</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Upcoming
+  var upcoming = (role==='sales'?mine:active).filter(b=>b.status==='confirmed').slice(0,6);
+  html += `<div class="card"><div class="card-title">📋 Upcoming Bookings</div>`;
+  if (!upcoming.length) {
+    html += `<div class="empty"><div class="ei">📅</div><p>No upcoming bookings</p></div>`;
+  } else {
+    html += `<table class="tbl"><thead><tr><th>Date</th><th>Time</th><th>Venue</th><th>Agency</th>${role!=='sales'?'<th>Booked By</th>':''}<th>Pax</th><th></th></tr></thead><tbody>`;
+    upcoming.forEach(b=>{
+      var v=getVenue(b.venueId), s=getSlots().find(s=>s.key===b.slotKey), rep=getUser(b.bookedBy);
+      html += `<tr>
+        <td>${fmtDate(b.date)}</td><td style="font-size:11px">${s?s.label:'—'}</td>
+        <td style="font-size:11px">${v?v.name.split('–')[0].trim():'—'}</td>
+        <td><strong>${b.agencyName}</strong></td>
+        ${role!=='sales'?`<td style="font-size:12px">${rep?rep.name:'—'}</td>`:''}
+        <td>${b.attendees}</td>
+        <td><button class="btn btn-outline btn-xs" onclick="viewBooking('${b.id}')">View</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+
+  if (role!=='sales') {
+    html += `<div class="card" style="margin-top:1rem"><div class="card-title">👥 Sales Rep Summary</div>
+      <table class="tbl"><thead><tr><th>Name</th><th>Bookings</th><th>Total Pax</th><th>Attended</th><th>No-show</th></tr></thead><tbody>`;
+    Object.values(CACHE.users).filter(u=>u.role==='sales').forEach(u=>{
+      var ub = active.filter(b=>b.bookedBy===u.id);
+      html += `<tr><td><strong>${u.name}</strong></td><td>${ub.length}</td>
+        <td>${ub.reduce((s,b)=>s+parseInt(b.attendees||1),0)}</td>
+        <td>${ub.filter(b=>b.status==='attended').length}</td>
+        <td>${ub.filter(b=>b.status==='noshow').length}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════════════════════════════
+function renderCalendar() {
+  var days = getDays(), slots = getSlots();
+  var venues = CACHE.config.venues || [];
+  var venue = venues[VENUE_IDX];
+  if (!venue) { VENUE_IDX=0; venue=venues[0]; }
+
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">📅 Booking Calendar</div>
+    <div class="page-sub">${days.length} days · ${slots.length} slots/day · ${venue.capacity} pax max per slot</div></div>
+  </div></div>`;
+
+  // Venue tabs
+  html += '<div class="venue-tabs">';
+  venues.forEach((v,i)=>{
+    var cnt = activeBookings().filter(b=>b.venueId===v.id).length;
+    html += `<div class="venue-tab${VENUE_IDX===i?' active':''}" onclick="switchVenue(${i})">🏢 ${v.name} <span style="font-size:11px;color:var(--muted)">${cnt} booked</span></div>`;
+  });
+  html += '</div>';
+
+  html += `<div style="display:flex;gap:12px;margin-bottom:1rem;font-size:12px;flex-wrap:wrap">
+    <span>🟢 Available</span><span>🟡 Partial</span><span>🔴 Full</span>
+    ${CU.role==='sales'?'<span>🟩 My booking</span>':''}
+  </div>`;
+
+  html += '<div class="cal-wrap"><table class="cal-table"><thead><tr><th class="slot-th">Time Slot</th>';
+  days.forEach(d=>{ html += `<th>${fmtDate(d)}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  slots.forEach(slot=>{
+    html += `<tr><td><div class="slot-lbl">${slot.label}</div></td>`;
+    days.forEach(date=>{
+      var pax = slotPax(venue.id, date, slot.key);
+      var bks = slotBookings(venue.id, date, slot.key);
+      var cap = venue.capacity;
+      var full = pax >= cap;
+      var pct = Math.min(100, Math.round(pax/cap*100));
+      var fillC = full?'#ef9a9a':pct>50?'#ffe082':'#a5d6a7';
+      html += `<td><div class="slot-cell${full?' is-full':''}" onclick="${full?'':("openBook('"+venue.id+"','"+date+"','"+slot.key+"')")}">`;
+      html += `<div class="slot-count" style="color:${full?'var(--red)':pax>0?'var(--orange)':'var(--muted)'}">${pax}/${cap} pax ${full?'🔴':pax>0?'🟡':'🟢'}</div>`;
+      bks.forEach(b=>{
+        var mine = b.bookedBy===CU.id;
+        var show = canSeeDetail(b);
+        if (show) {
+          var nm = b.agencyName; if(nm.length>16) nm=nm.substring(0,15)+'…';
+          html += `<div class="bk-chip ${mine?'mine':'other'}" onclick="event.stopPropagation();viewBooking('${b.id}')">🏢 ${nm}</div>`;
+        } else {
+          html += `<div class="bk-chip masked">${b.attendees} pax</div>`;
+        }
+      });
+      if (!full) html += `<div class="add-btn">+ Book</div>`;
+      html += `</div><div class="pax-bar"><div class="pax-fill" style="width:${pct}%;background:${fillC}"></div></div></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function switchVenue(i) { VENUE_IDX=i; renderCalendar(); }
+
+// ═══════════════════════════════════════════════════════════════════
+// BOOKING MODAL — new
+// ═══════════════════════════════════════════════════════════════════
+function openBook(venueId, date, slotKey) {
+  var venue = getVenue(venueId);
+  var slot = getSlots().find(s=>s.key===slotKey);
+  var pax = slotPax(venueId, date, slotKey);
+  var remaining = venue.capacity - pax;
+
+  document.getElementById('modalTitle').textContent = 'New Booking';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="alert alert-info">📅 ${fmtDate(date)} · ${slot?slot.label:''} · ${venue.name}</div>
+    <div class="alert alert-${remaining<10?'warn':'success'}">${remaining} pax remaining in this slot</div>
+    <div class="fr2">
+      <div class="fg"><label class="req">Agency Name</label><input type="text" id="f_agency" placeholder="Agency name"></div>
+      <div class="fg"><label class="req">Owner / Contact Name</label><input type="text" id="f_owner" placeholder="Full name"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label class="req">Phone Number</label><input type="tel" id="f_phone" placeholder="+971 XX XXX XXXX"></div>
+      <div class="fg"><label class="req">Number of Attendees</label>
+        <input type="number" id="f_att" min="1" max="${remaining}" value="1">
+        <div class="hint">Max ${remaining} pax remaining</div></div>
+    </div>
+    <div class="fg"><label>Notes (optional)</label>
+      <textarea id="f_notes" placeholder="Any context or follow-up notes…"></textarea>
+      ${CU.role==='sales'?'<div class="hint">Notes visible to Admin and Super Admin only</div>':''}</div>`;
+  document.getElementById('modalFoot').innerHTML = `
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-gold" onclick="submitBook('${venueId}','${date}','${slotKey}')">Confirm Booking</button>`;
+  document.getElementById('modal').style.display='flex';
+}
+
+function submitBook(venueId, date, slotKey) {
+  var agency = document.getElementById('f_agency').value.trim();
+  var owner  = document.getElementById('f_owner').value.trim();
+  var phone  = document.getElementById('f_phone').value.trim();
+  var att    = parseInt(document.getElementById('f_att').value)||1;
+  var notes  = document.getElementById('f_notes').value.trim();
+  if (!agency||!owner||!phone) { alert('Please fill all required fields.'); return; }
+  var venue = getVenue(venueId);
+  var pax = slotPax(venueId, date, slotKey);
+  if (pax+att > venue.capacity) { alert('Not enough capacity. Only '+(venue.capacity-pax)+' pax remaining.'); return; }
+  // Duplicate check
+  var dup = activeBookings().find(b=>b.agencyName.toLowerCase()===agency.toLowerCase());
+  if (dup && !confirm('This agency already has a booking. Add another?')) return;
+
+  var id = uid();
+  var booking = { id, venueId, date, slotKey, agencyName:agency, ownerName:owner, phone, attendees:att, notes, bookedBy:CU.id, status:'confirmed', createdAt:new Date().toISOString() };
+  db.ref('/bookings/'+id).set(booking).then(()=>{ showSaved(); closeModal(); }).catch(e=>alert('Error: '+e.message));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BOOKING DETAIL MODAL
+// ═══════════════════════════════════════════════════════════════════
+function viewBooking(id) {
+  var b = CACHE.bookings[id];
+  if (!b) return;
+  var venue = getVenue(b.venueId);
+  var slot = getSlots().find(s=>s.key===b.slotKey);
+  var rep = getUser(b.bookedBy);
+  var show = canSeeDetail(b);
+  var canCancel = CU.role==='superadmin' && b.status!=='cancelled';
+  var canAttend = CU.role!=='sales' && b.status==='confirmed';
+
+  document.getElementById('modalTitle').textContent = 'Booking Details';
+  var html = `<div class="alert alert-info">📅 ${fmtDate(b.date)} · ${slot?slot.label:'—'}</div>
+    <div class="g2" style="margin-bottom:1rem">
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Venue</div><strong>${venue?venue.name:'—'}</strong></div>
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Status</div><span class="badge badge-${b.status}">${b.status}</span></div>
+    </div>`;
+
+  if (show) {
+    html += `<div class="g2" style="margin-bottom:1rem">
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Agency</div><strong style="font-size:15px">${b.agencyName}</strong></div>
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Owner</div>${b.ownerName}</div>
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Phone</div><a href="tel:${b.phone}" style="color:var(--blue)">${b.phone}</a></div>
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Attendees</div><strong>${b.attendees} pax</strong></div>
+    </div>`;
+    if (b.notes && CU.role!=='sales') html += `<div style="margin-bottom:1rem"><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Notes</div><div style="background:var(--lgold);padding:10px;border-radius:6px;font-size:13px">${b.notes}</div></div>`;
+  } else {
+    html += `<div class="alert alert-warn">🔒 Agency details are confidential — only your own bookings are visible.</div><div><strong>Attendees:</strong> ${b.attendees} pax</div>`;
+  }
+  html += `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">Booked by: ${rep?rep.name:'—'} · ${fmtDT(b.createdAt)}</div>`;
+  document.getElementById('modalBody').innerHTML = html;
+
+  var foot = '<button class="btn btn-outline" onclick="closeModal()">Close</button>';
+  if (canAttend) {
+    foot += `<button class="btn btn-green btn-sm" onclick="setStatus('${id}','attended')">✓ Attended</button>
+             <button class="btn btn-outline btn-sm" style="border-color:var(--orange);color:var(--orange)" onclick="setStatus('${id}','noshow')">No-show</button>`;
+  }
+  if (canCancel) foot += `<button class="btn btn-red btn-sm" onclick="cancelBook('${id}')">Cancel Booking</button>`;
+  document.getElementById('modalFoot').innerHTML = foot;
+  document.getElementById('modal').style.display='flex';
+}
+
+function setStatus(id, status) {
+  db.ref('/bookings/'+id+'/status').set(status).then(()=>{ showSaved(); closeModal(); }).catch(e=>alert(e.message));
+}
+
+function cancelBook(id) {
+  if (!confirm('Cancel this booking? This cannot be undone.')) return;
+  db.ref('/bookings/'+id).update({ status:'cancelled', cancelledAt:new Date().toISOString(), cancelledBy:CU.id })
+    .then(()=>{ showSaved(); closeModal(); }).catch(e=>alert(e.message));
+}
+
+function closeModal() { document.getElementById('modal').style.display='none'; }
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+
+// ═══════════════════════════════════════════════════════════════════
+// MY BOOKINGS
+// ═══════════════════════════════════════════════════════════════════
+function renderMyBookings() {
+  var mine = allBookings().filter(b=>b.bookedBy===CU.id).sort((a,b)=>a.date>b.date?1:-1);
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">My Bookings</div>
+    <div class="page-sub">${mine.filter(b=>b.status!=='cancelled').length} active</div></div>
+    <div class="actions"><button class="btn btn-gold" onclick="navigate('calendar')">+ New Booking</button></div>
+  </div></div>`;
+  if (!mine.length) {
+    html += `<div class="empty"><div class="ei">📋</div><p>No bookings yet</p><button class="btn btn-gold" style="margin-top:1rem" onclick="navigate('calendar')">Book a slot</button></div>`;
+  } else {
+    html += `<div class="card"><table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Pax</th><th>Status</th><th></th></tr></thead><tbody>`;
+    mine.forEach(b=>{
+      var v=getVenue(b.venueId), s=getSlots().find(s=>s.key===b.slotKey);
+      html += `<tr style="${b.status==='cancelled'?'opacity:.5':''}">
+        <td>${fmtDate(b.date)}</td><td style="font-size:11px">${s?s.label:'—'}</td>
+        <td style="font-size:11px">${v?v.name.split('–')[0].trim():'—'}</td>
+        <td><strong>${b.agencyName}</strong></td><td>${b.ownerName}</td>
+        <td><a href="tel:${b.phone}" style="color:var(--blue)">${b.phone}</a></td>
+        <td>${b.attendees}</td><td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td><button class="btn btn-outline btn-xs" onclick="viewBooking('${b.id}')">View</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ALL BOOKINGS
+// ═══════════════════════════════════════════════════════════════════
+function renderAllBookings() {
+  var all = allBookings().sort((a,b)=>a.date>b.date?1:-1);
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">All Bookings</div>
+    <div class="page-sub">${all.filter(b=>b.status!=='cancelled').length} active · ${all.filter(b=>b.status==='cancelled').length} cancelled</div></div>
+    <div class="actions">
+      ${CU.role==='superadmin'?'<button class="btn btn-gold" onclick="exportCSV()">⬇ Export CSV</button>':''}
+    </div>
+  </div></div>
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">`;
+  ['all','confirmed','attended','noshow','cancelled'].forEach(s=>{
+    var cnt = s==='all'?all.length:all.filter(b=>b.status===s).length;
+    html += `<button class="btn btn-outline btn-sm" onclick="filterBk('${s}')">${s} (${cnt})</button>`;
+  });
+  html += `</div><div id="bkTable">${buildBkTable(all)}</div></div>`;
+  document.getElementById('content').innerHTML = html;
+}
+
+function filterBk(status) {
+  var all = allBookings().sort((a,b)=>a.date>b.date?1:-1);
+  var f = status==='all'?all:all.filter(b=>b.status===status);
+  document.getElementById('bkTable').innerHTML = buildBkTable(f);
+}
+
+function buildBkTable(bookings) {
+  if (!bookings.length) return '<div class="empty"><div class="ei">📋</div><p>No bookings found</p></div>';
+  var html = `<table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Pax</th><th>Booked By</th><th>Status</th><th></th></tr></thead><tbody>`;
+  bookings.forEach(b=>{
+    var v=getVenue(b.venueId), s=getSlots().find(x=>x.key===b.slotKey), rep=getUser(b.bookedBy);
+    html += `<tr style="${b.status==='cancelled'?'opacity:.5':''}">
+      <td>${fmtDate(b.date)}</td><td style="font-size:11px">${s?s.label:'—'}</td>
+      <td style="font-size:11px">${v?v.name.split('–')[0].trim():'—'}</td>
+      <td><strong>${b.agencyName}</strong></td><td>${b.ownerName}</td>
+      <td><a href="tel:${b.phone}" style="color:var(--blue)">${b.phone}</a></td>
+      <td>${b.attendees}</td><td style="font-size:12px">${rep?rep.name:'—'}</td>
+      <td><span class="badge badge-${b.status}">${b.status}</span></td>
+      <td><button class="btn btn-outline btn-xs" onclick="viewBooking('${b.id}')">View</button></td>
+    </tr>`;
+  });
+  return html + '</tbody></table>';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AGENCIES
+// ═══════════════════════════════════════════════════════════════════
+function renderAgencies() {
+  var active = activeBookings();
+  var map = {};
+  active.forEach(b=>{
+    if (!map[b.agencyName]) map[b.agencyName]={name:b.agencyName,owner:b.ownerName,phone:b.phone,bookings:[],pax:0};
+    map[b.agencyName].bookings.push(b);
+    map[b.agencyName].pax += parseInt(b.attendees||1);
+  });
+  var agencies = Object.values(map).sort((a,b)=>a.name.localeCompare(b.name));
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">🏢 Agencies</div>
+    <div class="page-sub">${agencies.length} agencies registered</div></div>
+    ${CU.role==='superadmin'?'<div class="actions"><button class="btn btn-gold" onclick="exportCSV()">⬇ Export CSV</button></div>':''}
+  </div></div><div class="card">`;
+  if (!agencies.length) {
+    html += '<div class="empty"><div class="ei">🏢</div><p>No agencies booked yet</p></div>';
+  } else {
+    html += `<table class="tbl"><thead><tr><th>Agency</th><th>Owner</th><th>Phone</th><th>Bookings</th><th>Total Pax</th><th>Statuses</th></tr></thead><tbody>`;
+    agencies.forEach(a=>{
+      var statuses=[...new Set(a.bookings.map(b=>b.status))];
+      html += `<tr><td><strong>${a.name}</strong></td><td>${a.owner}</td>
+        <td><a href="tel:${a.phone}" style="color:var(--blue)">${a.phone}</a></td>
+        <td>${a.bookings.length}</td><td>${a.pax}</td>
+        <td>${statuses.map(s=>`<span class="badge badge-${s}">${s}</span>`).join(' ')}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════════════════════════
+function renderUsers() {
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">👥 Users</div><div class="page-sub">${Object.keys(CACHE.users).length} users</div></div>
+    <div class="actions"><button class="btn btn-gold" onclick="openAddUser()">+ Add User</button></div>
+  </div></div><div class="card">
+  <table class="tbl"><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Bookings</th><th>Actions</th></tr></thead><tbody>`;
+  Object.values(CACHE.users).forEach(u=>{
+    var bks = activeBookings().filter(b=>b.bookedBy===u.id).length;
+    var rc={sales:'var(--green)',admin:'var(--blue)',superadmin:'var(--gold)'};
+    html += `<tr><td><strong>${u.name}</strong>${u.id===CU.id?' <span style="font-size:10px;color:var(--muted)">(you)</span>':''}</td>
+      <td><code style="background:var(--lgold);padding:2px 6px;border-radius:4px;font-size:12px">${u.username}</code></td>
+      <td><span style="font-weight:600;color:${rc[u.role]||'var(--text)'}">${u.role}</span></td>
+      <td>${bks}</td>
+      <td><button class="btn btn-outline btn-xs" onclick="editUser('${u.id}')">Edit</button>
+      ${u.id!==CU.id?`<button class="btn btn-red btn-xs" style="margin-left:4px" onclick="deleteUser('${u.id}')">Remove</button>`:''}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function userForm(u) {
+  u = u||{};
+  return `<div class="fr2">
+    <div class="fg"><label class="req">Full Name</label><input type="text" id="uf_name" value="${u.name||''}" placeholder="Full name"></div>
+    <div class="fg"><label class="req">Username</label><input type="text" id="uf_username" value="${u.username||''}" placeholder="username"></div>
+  </div><div class="fr2">
+    <div class="fg"><label ${!u.id?'class="req"':''}>Password${u.id?' (blank = keep current)':''}</label>
+      <input type="password" id="uf_pass" placeholder="${u.id?'Leave blank to keep':'Set password'}"></div>
+    <div class="fg"><label class="req">Role</label><select id="uf_role">
+      <option value="sales" ${u.role==='sales'?'selected':''}>Sales</option>
+      <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+      <option value="superadmin" ${u.role==='superadmin'?'selected':''}>Super Admin</option>
+    </select></div>
+  </div>`;
+}
+
+function openAddUser() {
+  document.getElementById('modalTitle').textContent='Add User';
+  document.getElementById('modalBody').innerHTML=userForm({});
+  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="saveUser(null)">Add User</button>`;
+  document.getElementById('modal').style.display='flex';
+}
+function editUser(id) {
+  var u=CACHE.users[id];
+  document.getElementById('modalTitle').textContent='Edit User';
+  document.getElementById('modalBody').innerHTML=userForm(u);
+  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="saveUser('${id}')">Save</button>`;
+  document.getElementById('modal').style.display='flex';
+}
+function saveUser(id) {
+  var name=document.getElementById('uf_name').value.trim();
+  var username=document.getElementById('uf_username').value.trim();
+  var pass=document.getElementById('uf_pass').value;
+  var role=document.getElementById('uf_role').value;
+  if (!name||!username) { alert('Name and username required.'); return; }
+  if (!id&&!pass) { alert('Password required for new users.'); return; }
+  var dup=Object.values(CACHE.users).find(u=>u.username===username&&u.id!==id);
+  if (dup) { alert('Username already taken.'); return; }
+  if (id) {
+    var upd={name,username,role};
+    if (pass) upd.password=pass;
+    db.ref('/users/'+id).update(upd).then(()=>{ showSaved(); closeModal(); }).catch(e=>alert(e.message));
+  } else {
+    var newId='u'+Date.now();
+    db.ref('/users/'+newId).set({id:newId,username,password:pass,name,role}).then(()=>{ showSaved(); closeModal(); }).catch(e=>alert(e.message));
+  }
+}
+function deleteUser(id) {
+  var u=CACHE.users[id];
+  if (!confirm(`Remove user "${u.name}"? Their bookings will remain.`)) return;
+  db.ref('/users/'+id).remove().then(()=>showSaved()).catch(e=>alert(e.message));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════
+function renderConfig() {
+  var c = CACHE.config;
+  var slots = getSlots();
+  var html = `<div class="page-header"><div class="ph-row">
+    <div><div class="page-title">⚙️ Configuration</div></div>
+    <div class="actions"><button class="btn btn-gold" onclick="saveConfig()">💾 Save Changes</button></div>
+  </div></div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="cfg-title">Event Settings</div>
+    <div class="cfg-grid">
+      <div class="fg"><label>Event Name</label><input type="text" id="c_name" value="${c.eventName}"></div>
+      <div class="fg"><label>Start Date</label><input type="date" id="c_start" value="${c.startDate}"></div>
+      <div class="fg"><label>End Date</label><input type="date" id="c_end" value="${c.endDate}"></div>
+    </div>
+    <div class="cfg-grid">
+      <div class="fg"><label>Slot Start Time</label><input type="time" id="c_slotstart" value="${c.slotStart}"></div>
+      <div class="fg"><label>Slot End Time</label><input type="time" id="c_slotend" value="${c.slotEnd}"></div>
+      <div class="fg"><label>Slot Duration (minutes)</label><input type="number" id="c_dur" value="${c.slotDuration}" min="15" max="240">
+        <div class="hint">Current: ${c.slotDuration} min → ${slots.length} slots/day</div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="cfg-title">Venues</div>`;
+  (c.venues||[]).forEach((v,i)=>{
+    html += `<div class="venue-cfg"><div class="fr2">
+      <div class="fg"><label>Venue Name</label><input type="text" id="v_name_${i}" value="${v.name}"></div>
+      <div class="fg"><label>Capacity (pax)</label><input type="number" id="v_cap_${i}" value="${v.capacity}" min="1"></div>
+    </div></div>`;
+  });
+  html += `<button class="btn btn-outline btn-sm" onclick="addVenue()">+ Add Venue</button></div>
+  <div class="card">
+    <div class="cfg-title">⚠️ Danger Zone</div>
+    <button class="btn btn-red btn-sm" onclick="resetBookings()">Reset All Bookings</button>
+    <div class="hint" style="margin-top:8px">Cannot be undone</div>
+  </div>`;
+  document.getElementById('content').innerHTML = html;
+}
+
+function saveConfig() {
+  var c = CACHE.config;
+  var newC = {
+    eventName: document.getElementById('c_name').value,
+    startDate: document.getElementById('c_start').value,
+    endDate: document.getElementById('c_end').value,
+    slotStart: document.getElementById('c_slotstart').value,
+    slotEnd: document.getElementById('c_slotend').value,
+    slotDuration: parseInt(document.getElementById('c_dur').value)||60,
+    venues: (c.venues||[]).map((v,i)=>({
+      id: v.id,
+      name: document.getElementById('v_name_'+i).value,
+      capacity: parseInt(document.getElementById('v_cap_'+i).value)||50
+    }))
+  };
+  db.ref('/config').set(newC).then(()=>{ showSaved(); alert('Configuration saved.'); }).catch(e=>alert(e.message));
+}
+
+function addVenue() {
+  var c = CACHE.config;
+  var venues = [...(c.venues||[]), {id:'v'+Date.now(), name:'New Venue', capacity:50}];
+  db.ref('/config/venues').set(venues).then(()=>{ showSaved(); renderConfig(); }).catch(e=>alert(e.message));
+}
+
+function resetBookings() {
+  if (!confirm('Delete ALL bookings from the database? This cannot be undone.')) return;
+  db.ref('/bookings').remove().then(()=>{ showSaved(); alert('All bookings deleted.'); navigate('dashboard'); }).catch(e=>alert(e.message));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CSV EXPORT (Super Admin only)
+// ═══════════════════════════════════════════════════════════════════
+function exportCSV() {
+  if (CU.role!=='superadmin') { alert('Access denied.'); return; }
+  var rows=[['ID','Date','Slot','Venue','Agency','Owner','Phone','Attendees','Booked By','Status','Notes','Created At']];
+  allBookings().forEach(b=>{
+    var v=getVenue(b.venueId), s=getSlots().find(x=>x.key===b.slotKey), rep=getUser(b.bookedBy);
+    rows.push([b.id,b.date,s?s.label:'',v?v.name:'',b.agencyName,b.ownerName,b.phone,b.attendees,rep?rep.name:'',b.status,b.notes||'',fmtDT(b.createdAt)]);
+  });
+  var csv=rows.map(r=>r.map(v=>'"'+(v+'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='vincitore_bookings_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
