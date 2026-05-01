@@ -375,7 +375,23 @@ async function init(){
 
     startListeners();
     document.getElementById('connectingMsg').style.display='none';
-    document.getElementById('loginForm').style.display='block';
+
+    // ── Restore session on refresh ────────────────────────────────
+    // Wait briefly for users listener to populate, then auto-login if session exists
+    setTimeout(function(){
+      var savedId=localStorage.getItem('vp_session');
+      if(savedId&&CACHE.users[savedId]){
+        var user=CACHE.users[savedId];
+        CU=user;
+        document.getElementById('authScreen').style.display='none';
+        document.getElementById('app').style.cssText='display:flex;flex-direction:column';
+        document.getElementById('topbarUser').textContent=user.name;
+        document.getElementById('topbarRole').textContent=(roles()[user.role]||{}).label||user.role;
+        buildSidebar();buildEventSwitcher();navigate('dashboard');
+      } else {
+        document.getElementById('loginForm').style.display='block';
+      }
+    }, 800);
   }catch(e){
     document.getElementById('connectingMsg').innerHTML='❌ Connection failed: '+e.message;
   }
@@ -454,6 +470,7 @@ function doLogin(){
   if(!user){document.getElementById('authError').style.display='block';return;}
   document.getElementById('authError').style.display='none';
   CU=user;
+  localStorage.setItem('vp_session', user.id);
   document.getElementById('authScreen').style.display='none';
   document.getElementById('app').style.cssText='display:flex;flex-direction:column';
   document.getElementById('topbarUser').textContent=user.name;
@@ -461,7 +478,7 @@ function doLogin(){
   buildSidebar();buildEventSwitcher();navigate('dashboard');
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginForm').style.display!=='none')doLogin();});
-function doLogout(){CU=null;document.getElementById('app').style.display='none';document.getElementById('authScreen').style.display='flex';document.getElementById('loginPass').value='';document.getElementById('loginUser').value='';}
+function doLogout(){CU=null;localStorage.removeItem('vp_session');document.getElementById('app').style.display='none';document.getElementById('authScreen').style.display='flex';document.getElementById('loginPass').value='';document.getElementById('loginUser').value='';}
 
 // ── Event switcher ─────────────────────────────────────────────────
 function buildEventSwitcher(){
