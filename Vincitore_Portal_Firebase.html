@@ -153,6 +153,65 @@ input,select,textarea,button{font-family:inherit}
 .empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
 .empty .ei{font-size:40px;margin-bottom:.75rem}
 .empty p{font-size:14px}
+/* PHONE INPUT */
+.phone-wrap{display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;transition:border .2s}
+.phone-wrap:focus-within{border-color:var(--gold)}
+.phone-cc{padding:9px 10px;background:var(--egold);border-right:1.5px solid var(--border);font-size:13px;font-weight:600;color:var(--dgold);white-space:nowrap;flex-shrink:0}
+.phone-num{border:none!important;border-radius:0!important;flex:1;outline:none;padding:9px 12px;font-size:13px}
+.phone-err{font-size:11px;color:var(--red);margin-top:3px;display:none}
+/* MOBILE HAMBURGER */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px}
+.hamburger span{display:block;width:22px;height:2px;background:#ccc;border-radius:2px;transition:all .2s}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+/* MOBILE BREAKPOINTS */
+@media(max-width:768px){
+  /* Auth */
+  .auth-card{width:calc(100vw - 2rem);padding:2rem 1.5rem}
+  /* Topbar */
+  .topbar{padding:0 1rem}
+  .topbar-divider,.topbar-title,.topbar-user,.event-switcher{display:none}
+  .hamburger{display:flex}
+  .save-ind{display:none}
+  /* Sidebar — slide in */
+  .sidebar{position:fixed;left:-240px;top:56px;height:calc(100vh - 56px);z-index:100;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.15);width:240px}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  /* Content */
+  .content{padding:1rem}
+  /* Grids */
+  .g2,.g3,.g4{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:1fr 1fr}
+  .fr2{grid-template-columns:1fr}
+  .cfg-grid{grid-template-columns:1fr}
+  /* Page header */
+  .ph-row{flex-direction:column;gap:10px}
+  .actions{width:100%}
+  .actions .btn{flex:1;justify-content:center}
+  /* Tables — scroll */
+  .card{overflow-x:auto;padding:1rem}
+  .tbl,.perm-tbl,.cal-tbl{min-width:520px}
+  /* Stats */
+  .stat-n{font-size:24px}
+  /* Modal */
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal{border-radius:16px 16px 0 0;max-height:85vh;max-width:100%}
+  /* Venue tabs */
+  .venue-tab{font-size:12px;padding:6px 10px}
+  /* Role cards */
+  .role-card{flex-direction:column;align-items:flex-start;gap:8px}
+  .role-card > div:last-child{width:100%;display:flex;gap:6px}
+  .role-card > div:last-child .btn{flex:1;justify-content:center}
+  /* Venue config */
+  .venue-cfg{flex-direction:column}
+  .venue-cfg .fg{width:100%}
+  /* Modal foot */
+  .modal-foot{flex-direction:column-reverse}
+  .modal-foot .btn{width:100%;justify-content:center}
+}
+@media(max-width:400px){
+  .g2,.g4{grid-template-columns:1fr}
+  .page-title{font-size:18px}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -179,6 +238,9 @@ input,select,textarea,button{font-family:inherit}
 <div id="app">
   <div class="topbar">
     <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <img id="topbarLogo" alt="Vincitore">
       <span class="topbar-divider">|</span>
       <span class="topbar-title" id="topbarEventName">Agency Briefing Portal</span>
@@ -192,6 +254,7 @@ input,select,textarea,button{font-family:inherit}
     </div>
   </div>
   <div class="main">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar"></div>
     <div class="content" id="content"><div class="connecting">Loading…</div></div>
   </div>
@@ -433,10 +496,21 @@ function buildSidebar(){
   });
   document.getElementById('sidebar').innerHTML=html;
 }
+// ── Sidebar toggle (mobile) ───────────────────────────────────────
+function toggleSidebar(){
+  var sb=document.getElementById('sidebar');
+  var ov=document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+// Close sidebar on nav click (mobile)
 function navigate(page){
   PAGE=page;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   var nav=document.getElementById('nav-'+page);if(nav)nav.classList.add('active');
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
   rerender();
 }
 
@@ -609,9 +683,69 @@ function renderCalendar(){
 function switchVenue(i){VENUE_IDX=i;renderCalendar();}
 
 // ── Book modal (first booking on a slot) ──────────────────────────
+// ── Phone validation ──────────────────────────────────────────────
+// Accepts: +[country_code]-[number]  e.g. +971-509082142
+// Rules: country code 1-3 digits, number 5-12 digits, digits only in each part
+function phoneHTML(){
+  return `<div class="fg">
+    <label class="req">Phone Number</label>
+    <div class="phone-wrap">
+      <span class="phone-cc">+</span>
+      <input type="text" id="f_cc" placeholder="971" maxlength="4"
+        style="width:64px;border:none;background:var(--egold);font-weight:600;color:var(--dgold);padding:9px 6px;outline:none;text-align:center"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'');validatePhone()">
+      <span style="padding:9px 4px;color:var(--border);font-size:18px;line-height:1;background:var(--egold)">-</span>
+      <input type="tel" id="f_phone" placeholder="509082142" class="phone-num"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'');validatePhone()">
+    </div>
+    <div class="phone-err" id="phoneErr">Enter country code (e.g. 971) and number (7–12 digits)</div>
+    <div class="hint">Format: +[country code]-[number] &nbsp;·&nbsp; e.g. +971-509082142</div>
+  </div>`;
+}
+
+function validatePhone(){
+  var cc=document.getElementById('f_cc');
+  var ph=document.getElementById('f_phone');
+  var err=document.getElementById('phoneErr');
+  if(!cc||!ph||!err)return true;
+  var ccv=cc.value.trim(), phv=ph.value.trim();
+  var wrap=cc.closest('.phone-wrap');
+  var ok=ccv.length>=1&&ccv.length<=4&&phv.length>=7&&phv.length<=12;
+  if(wrap) wrap.style.borderColor=(!ccv&&!phv)?'var(--border)':ok?'var(--green)':'var(--red)';
+  err.style.display=(!ccv&&!phv)||ok?'none':'block';
+  return ok;
+}
+
+function getPhoneValue(){
+  var cc=(document.getElementById('f_cc')||{}).value||'';
+  var ph=(document.getElementById('f_phone')||{}).value||'';
+  return cc&&ph?'+'+cc+'-'+ph:'';
+}
+
+// ── "Book on behalf of" dropdown (shown to roles with canViewOthers) ──
+function behalfHTML(){
+  if(!can('canViewOthers'))return''; // sales sees nothing extra
+  var salesUsers=Object.values(CACHE.users).filter(u=>u.id!==CU.id);
+  if(!salesUsers.length)return'';
+  var opts=salesUsers.map(u=>`<option value="${u.id}">${u.name} (${(roles()[u.role]||{}).label||u.role})</option>`).join('');
+  return `<div class="fg" style="margin-bottom:1rem">
+    <label>Book on behalf of</label>
+    <select id="f_behalf">
+      <option value="">— Myself (${CU.name}) —</option>
+      ${opts}
+    </select>
+    <div class="hint">Leave as "Myself" if you are booking for your own slot</div>
+  </div>`;
+}
+
+function getBehalfId(){
+  var el=document.getElementById('f_behalf');
+  return el&&el.value?el.value:CU.id;
+}
+
+// ── Book modal (first booking on a slot) ──────────────────────────
 function openBook(venueId,date,slotKey){
   if(!can('canBook')){alert('You do not have permission to book slots.');return;}
-  // Re-check availability (race condition protection)
   var owner=slotOwner(venueId,date,slotKey);
   if(owner){
     if(owner===CU.id){openAddToSlot(venueId,date,slotKey);}
@@ -622,13 +756,14 @@ function openBook(venueId,date,slotKey){
   document.getElementById('modalTitle').textContent='Book a Slot';
   document.getElementById('modalBody').innerHTML=`
     <div class="alert alert-info">📅 ${fmtDate(date)} · ${slot?slot.label:''} · ${venue?venue.name:''}</div>
-    <div class="alert alert-ok">✅ This slot is available — it will be assigned exclusively to you once booked.</div>
+    <div class="alert alert-ok">✅ This slot is available — assigned exclusively to the booking rep.</div>
+    ${behalfHTML()}
     <div class="fr2">
       <div class="fg"><label class="req">Agency Name</label><input type="text" id="f_agency" placeholder="Agency name"></div>
       <div class="fg"><label class="req">Owner / Contact Name</label><input type="text" id="f_owner" placeholder="Full name"></div>
     </div>
     <div class="fr2">
-      <div class="fg"><label class="req">Phone Number</label><input type="tel" id="f_phone" placeholder="+971 XX XXX XXXX"></div>
+      ${phoneHTML()}
       <div class="fg"><label class="req">Attendees</label>
         <input type="number" id="f_att" min="1" max="${venue?venue.capacity:50}" value="1">
         <div class="hint">Max ${venue?venue.capacity:50} pax for this venue</div></div>
@@ -644,20 +779,22 @@ function openBook(venueId,date,slotKey){
 function openAddToSlot(venueId,date,slotKey){
   if(!can('canAddToOwnSlot')){alert('You do not have permission to add agencies to a slot.');return;}
   var owner=slotOwner(venueId,date,slotKey);
-  if(owner&&owner!==CU.id){alert('This slot belongs to another rep.');return;}
+  if(owner&&owner!==CU.id&&!can('canViewOthers')){alert('This slot belongs to another rep.');return;}
   var venue=getVenue(venueId),slot=getSlots().find(s=>s.key===slotKey);
   var pax=slotPax(venueId,date,slotKey),remaining=(venue?venue.capacity:50)-pax;
   if(remaining<=0){alert('This slot is full ('+pax+' pax). No more agencies can be added.');return;}
-  document.getElementById('modalTitle').textContent='Add Agency to Your Slot';
+  var ownerUser=getUser(owner);
+  document.getElementById('modalTitle').textContent='Add Agency to Slot';
   document.getElementById('modalBody').innerHTML=`
     <div class="alert alert-info">📅 ${fmtDate(date)} · ${slot?slot.label:''} · ${venue?venue.name:''}</div>
-    <div class="alert alert-ok">🟦 Your slot · ${pax} pax used · <strong>${remaining} pax remaining</strong></div>
+    <div class="alert alert-ok">🟦 ${owner===CU.id?'Your slot':'Slot owned by '+((ownerUser||{}).name||'—')} · ${pax} pax used · <strong>${remaining} remaining</strong></div>
+    ${behalfHTML()}
     <div class="fr2">
       <div class="fg"><label class="req">Agency Name</label><input type="text" id="f_agency" placeholder="Agency name"></div>
       <div class="fg"><label class="req">Owner / Contact Name</label><input type="text" id="f_owner" placeholder="Full name"></div>
     </div>
     <div class="fr2">
-      <div class="fg"><label class="req">Phone Number</label><input type="tel" id="f_phone" placeholder="+971 XX XXX XXXX"></div>
+      ${phoneHTML()}
       <div class="fg"><label class="req">Attendees</label>
         <input type="number" id="f_att" min="1" max="${remaining}" value="1">
         <div class="hint">Max ${remaining} pax remaining</div></div>
@@ -672,15 +809,22 @@ function openAddToSlot(venueId,date,slotKey){
 function submitBook(venueId,date,slotKey,isAdd){
   var agency=document.getElementById('f_agency').value.trim();
   var owner=document.getElementById('f_owner').value.trim();
-  var phone=document.getElementById('f_phone').value.trim();
   var att=parseInt(document.getElementById('f_att').value)||1;
   var notes=document.getElementById('f_notes').value.trim();
-  if(!agency||!owner||!phone){alert('Please fill all required fields.');return;}
+  var phone=getPhoneValue();
+  var behalfId=getBehalfId(); // who the booking is attributed to
 
-  // Slot ownership check
+  if(!agency||!owner){alert('Please fill all required fields.');return;}
+  if(!validatePhone()){alert('Please enter a valid phone number in the format: +[country code]-[number]\nExample: +971-509082142');return;}
+
+  // Slot ownership check — slot belongs to behalfId's user
   var slotOw=slotOwner(venueId,date,slotKey);
-  if(!isAdd&&slotOw&&slotOw!==CU.id){alert('Slot was just taken. Please choose another.');closeModal();renderCalendar();return;}
-  if(isAdd&&slotOw&&slotOw!==CU.id){alert('You cannot add to another rep\'s slot.');closeModal();return;}
+  if(!isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id){
+    alert('Slot was just taken by another rep. Please choose another slot.');closeModal();renderCalendar();return;
+  }
+  if(isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id&&!can('canViewOthers')){
+    alert('You cannot add to another rep\'s slot.');closeModal();return;
+  }
 
   // Capacity check
   var venue=getVenue(venueId);
@@ -692,7 +836,14 @@ function submitBook(venueId,date,slotKey,isAdd){
   if(dup&&!confirm('This agency already has a booking in this event. Add anyway?'))return;
 
   var id=uid();
-  var bk={id,venueId,date,slotKey,agencyName:agency,ownerName:owner,phone,attendees:att,notes,bookedBy:CU.id,status:'confirmed',createdAt:new Date().toISOString()};
+  var bk={
+    id,venueId,date,slotKey,
+    agencyName:agency,ownerName:owner,phone,attendees:att,notes,
+    bookedBy:behalfId,          // attributed to behalf user (or self)
+    bookedByAdmin:behalfId!==CU.id?CU.id:null, // track who actually created it
+    status:'confirmed',
+    createdAt:new Date().toISOString()
+  };
   DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).set(bk)
     .then(()=>{showSaved();closeModal();})
     .catch(e=>alert('Error saving: '+e.message));
@@ -710,7 +861,10 @@ function viewBk(id){
   var html=`<div class="alert alert-info">📅 ${fmtDate(b.date)} · ${slot?slot.label:'—'} · ${venue?venue.name:'—'}</div>
     <div class="g2" style="margin-bottom:1rem">
       <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Status</div><span class="badge badge-${b.status}">${b.status}</span></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Booked By</div><strong>${rep?rep.name:'—'}</strong></div>
+      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Booked By</div>
+        <strong>${rep?rep.name:'—'}</strong>
+        ${b.bookedByAdmin?`<div style="font-size:10px;color:var(--orange);margin-top:2px">⚡ Added by ${(getUser(b.bookedByAdmin)||{}).name||'Admin'}</div>`:''}
+      </div>
     </div>`;
   if(showDetail){
     html+=`<div class="g2" style="margin-bottom:1rem">
