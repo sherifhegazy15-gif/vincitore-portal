@@ -70,7 +70,6 @@ input,select,textarea,button{font-family:inherit}
 .btn-outline{background:#fff;color:var(--dgold);border:1.5px solid var(--gold)}.btn-outline:hover{background:var(--lgold)}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a02020}
 .btn-green{background:var(--green);color:#fff}
-.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#153d70}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
 .btn-xs{padding:3px 8px;font-size:11px;border-radius:5px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -280,11 +279,11 @@ firebase.initializeApp({
   messagingSenderId:"359961024997",appId:"1:359961024997:web:e1ef0d455171252100370c"
 });
 const DB=firebase.database();
-var LOGO='';
+var LOGO='data:image/png;base64,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';
 
 // ── Constants & State ─────────────────────────────────────────────
 var CU=null,PAGE='dashboard',VENUE_IDX=0,ACTIVE_EID=null;
-var CACHE={users:{},eventsMeta:{},cfg:null,bookings:{},videoBookings:{}};
+var CACHE={users:{},eventsMeta:{},cfg:null,bookings:{}};
 
 // All configurable permissions
 var ALL_PERMS=[
@@ -303,12 +302,10 @@ var ALL_PERMS=[
 
 // Default roles stored in Firebase under /roles
 var DEFAULT_ROLES={
-  superadmin:   {label:'Super Admin',   system:true, perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:true,canExport:true,canManageUsers:true,canManageRoles:true,canManageEvents:true,canManageSettings:true}},
-  admin:        {label:'Admin',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  sales:        {label:'Sales',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  operation:    {label:'Operation',     system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:true,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  art_director: {label:'Art Director',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  videographer: {label:'Videographer',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
+  superadmin:{label:'Super Admin',system:true,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:true,canExport:true,canManageUsers:true,canManageRoles:true,canManageEvents:true,canManageSettings:true}},
+  admin:     {label:'Admin',      system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
+  sales:     {label:'Sales',      system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
+  operation: {label:'Operation',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:true,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
 };
 
 var DEFAULT_EVENT_CFG={
@@ -327,43 +324,29 @@ document.getElementById('topbarLogo').src=LOGO;
 
 // ── Init & Migration ──────────────────────────────────────────────
 async function init(){
-  // Connection timeout — if Firebase doesn't respond in 8 seconds show error
-  var connTimeout=setTimeout(function(){
-    if(document.getElementById('loginForm').style.display==='none'&&document.getElementById('connectingMsg').style.display!=='none'){
-      document.getElementById('connectingMsg').innerHTML='❌ Connection is taking too long.<br><small>Check your internet and <a href="" style="color:var(--gold)">refresh the page</a>.</small>';
-    }
-  },8000);
-
   try{
-    // Read only what we need — NOT the whole DB
-    await new Promise(r=>setTimeout(r,500));
+    // ── SAFETY FIRST: never seed if data already exists ──────────
+    // Use a short timeout to ensure connection is real before checking
+    await new Promise(r=>setTimeout(r,1500));
 
-    var usersSnap   = await DB.ref('/users').once('value');
-    var eventsSnap  = await DB.ref('/events').once('value');
-    var oldCfgSnap  = await DB.ref('/config').once('value');
-    var rolesSnap   = await DB.ref('/roles').once('value');
+    var rootSnap=await DB.ref('/').once('value');
+    var root=rootSnap.val()||{};
 
-    var hasUsers     = usersSnap.exists();
-    var hasEvents    = eventsSnap.exists();
-    var hasOldConfig = oldCfgSnap.exists();
-    var hasRoles     = rolesSnap.exists();
+    // Check for v1 data and migrate — only if events don't exist yet
+    var hasEvents=!!(root.events&&Object.keys(root.events).length);
+    var hasUsers=!!(root.users&&Object.keys(root.users).length);
+    var hasOldConfig=!!(root.config);
+    var hasRoles=!!(root.roles&&Object.keys(root.roles).length);
 
     // Seed roles only if completely missing
     if(!hasRoles){
       await DB.ref('/roles').set(DEFAULT_ROLES);
-    }else{
-      // Add new roles if missing (art_director, videographer)
-      var existingRoles=rolesSnap.val()||{};
-      var updates={};
-      if(!existingRoles.art_director) updates['/roles/art_director']=DEFAULT_ROLES.art_director;
-      if(!existingRoles.videographer)  updates['/roles/videographer']=DEFAULT_ROLES.videographer;
-      if(Object.keys(updates).length) await DB.ref().update(updates);
     }
 
     // Migrate v1 → v2 only if old config exists AND no events yet
     if(hasOldConfig&&!hasEvents){
-      var c=oldCfgSnap.val();
-      var bks=(await DB.ref('/bookings').once('value')).val()||{};
+      var c=root.config;
+      var bks=root.bookings||{};
       var eid='event_'+Date.now();
       var migratedCfg={...DEFAULT_EVENT_CFG,
         name:c.eventName||DEFAULT_EVENT_CFG.name,
@@ -390,7 +373,8 @@ async function init(){
       await DB.ref('/active_event').set(eid2);
     }
 
-    // Seed default users only if completely absent
+    // ── NEVER overwrite existing users ───────────────────────────
+    // Only seed default users if users node is completely absent
     if(!hasUsers){
       var defUsers={
         u1:{id:'u1',username:'superadmin',password:'Vincitore@2026',name:'Super Admin',role:'superadmin'},
@@ -401,7 +385,6 @@ async function init(){
     }
 
     startListeners();
-    clearTimeout(connTimeout);
     document.getElementById('connectingMsg').style.display='none';
 
     // Restore session on refresh
@@ -414,22 +397,19 @@ async function init(){
         document.getElementById('app').style.cssText='display:flex;flex-direction:column';
         document.getElementById('topbarUser').textContent=user.name;
         document.getElementById('topbarRole').textContent=(roles()[user.role]||{}).label||user.role;
-        buildSidebar();buildEventSwitcher();navigate(getDefaultPage());
+        buildSidebar();buildEventSwitcher();navigate('dashboard');
       }else{
         document.getElementById('loginForm').style.display='block';
       }
-    },800);
+    },1000);
 
   }catch(e){
-    clearTimeout(connTimeout);
-    document.getElementById('connectingMsg').innerHTML='❌ Error: '+e.message+'<br><small><a href="" style="color:var(--gold)">Refresh to try again</a></small>';
-    console.error('Init error:', e);
+    document.getElementById('connectingMsg').innerHTML='❌ Connection failed: '+e.message+'<br><small>Check your internet connection and refresh.</small>';
   }
 }
 
 function startListeners(){
   DB.ref('/users').on('value',s=>{CACHE.users=s.val()||{};if(CU)rerender();});
-  DB.ref('/video_bookings').on('value',s=>{CACHE.videoBookings=s.exists()?s.val():{};if(CU&&PAGE==='videoshoots')renderVideoShoots();});
   DB.ref('/events_meta').on('value',s=>{CACHE.eventsMeta=s.val()||{};if(CU)buildEventSwitcher();});
   DB.ref('/roles').on('value',s=>{CACHE.roles=s.val()||DEFAULT_ROLES;if(CU)rerender();});
   DB.ref('/active_event').on('value',s=>{
@@ -491,12 +471,7 @@ function slotBk(vid,date,sk){return activeBk().filter(b=>b.venueId===vid&&b.date
 function slotOwner(vid,date,sk){var bks=slotBk(vid,date,sk);return bks.length?bks[0].bookedBy:null;}
 function slotPax(vid,date,sk){return slotBk(vid,date,sk).reduce((s,b)=>s+parseInt(b.attendees||1),0);}
 function showSaved(){var el=document.getElementById('saveInd');if(el){el.style.opacity='1';setTimeout(()=>el.style.opacity='0',1500);}}
-function rerender(){var p={dashboard:renderDashboard,calendar:renderCalendar,mybookings:renderMyBookings,allbookings:renderAllBookings,agencies:renderAgencies,users:renderUsers,roles:renderRoles,events:renderEvents,config:renderConfig,videoshoots:renderVideoShoots};if(p[PAGE])p[PAGE]();}
-
-function getDefaultPage(){
-  if(CU.role==='art_director'||CU.role==='videographer') return 'videoshoots';
-  return 'dashboard';
-}
+function rerender(){var p={dashboard:renderDashboard,calendar:renderCalendar,mybookings:renderMyBookings,allbookings:renderAllBookings,agencies:renderAgencies,users:renderUsers,roles:renderRoles,events:renderEvents,config:renderConfig};if(p[PAGE])p[PAGE]();}
 
 // ── Auth ──────────────────────────────────────────────────────────
 function doLogin(){
@@ -532,18 +507,16 @@ function switchEvent(eid){if(eid!==ACTIVE_EID)DB.ref('/active_event').set(eid);}
 
 // ── Nav ───────────────────────────────────────────────────────────
 function buildSidebar(){
-  var isCreative=CU.role==='art_director'||CU.role==='videographer';
   var items=[
-    {id:'dashboard',   icon:'📊',label:'Dashboard',        show:!isCreative},
-    {id:'videoshoots', icon:'🎬',label:'Video Shoots',      show:true},
-    {id:'calendar',    icon:'📅',label:'Booking Calendar',  show:!isCreative&&can('canBook')},
-    {id:'mybookings',  icon:'📋',label:'My Bookings',       show:!isCreative&&!can('canViewOthers')},
-    {id:'allbookings', icon:'📋',label:'All Bookings',      show:!isCreative&&can('canViewOthers')},
-    {id:'agencies',    icon:'🏢',label:'Agencies',          show:!isCreative&&can('canViewOthers')},
-    {id:'users',       icon:'👥',label:'Users',             show:can('canManageUsers')},
-    {id:'roles',       icon:'🔐',label:'Roles & Access',    show:can('canManageRoles')},
-    {id:'events',      icon:'🗓',label:'Events',            show:can('canManageEvents')},
-    {id:'config',      icon:'⚙️',label:'Settings',         show:can('canManageSettings')},
+    {id:'dashboard',  icon:'📊',label:'Dashboard',     show:true},
+    {id:'calendar',   icon:'📅',label:'Booking Calendar',show:true},
+    {id:'mybookings', icon:'📋',label:'My Bookings',   show:!can('canViewOthers')},
+    {id:'allbookings',icon:'📋',label:'All Bookings',  show:can('canViewOthers')},
+    {id:'agencies',   icon:'🏢',label:'Agencies',      show:can('canViewOthers')},
+    {id:'users',      icon:'👥',label:'Users',         show:can('canManageUsers')},
+    {id:'roles',      icon:'🔐',label:'Roles & Access', show:can('canManageRoles')},
+    {id:'events',     icon:'🗓',label:'Events',        show:can('canManageEvents')},
+    {id:'config',     icon:'⚙️',label:'Settings',     show:can('canManageSettings')},
   ];
   var html='<div class="nav-sep">Navigation</div>';
   items.filter(i=>i.show).forEach(i=>{
@@ -1290,295 +1263,6 @@ function saveConfig(){
 function addVenue(){var c=cfg()||{};var vs=[...(c.venues||[]),{id:'v'+Date.now(),name:'New Venue',capacity:50}];DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs).then(()=>{showSaved();renderConfig();});}
 function removeVenue(i){var c=cfg()||{};var vs=(c.venues||[]).filter((_,x)=>x!==i);if(!confirm('Remove this venue?'))return;DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs).then(()=>{showSaved();renderConfig();});}
 function resetBk(){if(!confirm('Delete ALL bookings for this event? Cannot be undone.'))return;DB.ref('/events/'+ACTIVE_EID+'/bookings').remove().then(()=>{showSaved();alert('Bookings deleted.');navigate('dashboard');});}
-
-// ═══════════════════════════════════════════════════════════════════
-// VIDEO SHOOTS
-// ═══════════════════════════════════════════════════════════════════
-
-// ── Schedule logic ────────────────────────────────────────────────
-// Mon–Fri: 10:00–18:00 (4 slots: 10,12,14,16)
-// Sat: 12:00–18:00 (3 slots: 12,14,16)
-// Sun: closed
-// Slot duration: 2 hours
-
-var VS_DAY_SLOTS = {
-  1:['10:00','12:00','14:00','16:00'], // Mon
-  2:['10:00','12:00','14:00','16:00'], // Tue
-  3:['10:00','12:00','14:00','16:00'], // Wed
-  4:['10:00','12:00','14:00','16:00'], // Thu
-  5:['10:00','12:00','14:00','16:00'], // Fri
-  6:['12:00','14:00','16:00'],          // Sat
-  0:[]                                  // Sun closed
-};
-
-var VS_SLOT_LABEL = {
-  '10:00':'10:00 AM – 12:00 PM','12:00':'12:00 PM – 2:00 PM',
-  '14:00':'2:00 PM – 4:00 PM','16:00':'4:00 PM – 6:00 PM'
-};
-
-var VS_DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-var VS_DAY_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-// Get next N days that have slots (starting today)
-function vsGetDays(n){
-  var days=[], d=new Date(); d.setHours(0,0,0,0);
-  while(days.length<n){
-    var dow=d.getDay();
-    if(VS_DAY_SLOTS[dow].length>0){
-      var y=d.getFullYear(),mo=d.getMonth()+1,dy=d.getDate();
-      days.push({
-        date: y+'-'+pad(mo)+'-'+pad(dy),
-        dow: dow,
-        label: VS_DAY_FULL[dow]+', '+dy+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo-1]+' '+y,
-        slots: VS_DAY_SLOTS[dow]
-      });
-    }
-    d.setDate(d.getDate()+1);
-  }
-  return days;
-}
-
-function vsGetBookings(date,slotKey){ return Object.values(CACHE.videoBookings).filter(b=>b.date===date&&b.slotKey===slotKey&&b.status!=='cancelled'); }
-function vsOurVideographerCount(date,slotKey){ return vsGetBookings(date,slotKey).filter(b=>b.needsVideographer).length; }
-function vsCanBookOurVideographer(date,slotKey){ return vsOurVideographerCount(date,slotKey)<1; }
-function vsCanBook(date,slotKey){ return vsGetBookings(date,slotKey).length<3; }
-
-// ── Render ────────────────────────────────────────────────────────
-function renderVideoShoots(){
-  var isCreative=CU.role==='art_director'||CU.role==='videographer';
-  var canBook=CU.role==='sales'||CU.role==='admin'||CU.role==='superadmin';
-  var days=vsGetDays(14);
-
-  var html=`<div class="page-header"><div class="ph-row">
-    <div><div class="page-title">🎬 Video Shoots</div>
-    <div class="page-sub">Agency video shoot bookings · 2-hour slots · Mon–Fri 10AM–6PM · Sat 12PM–6PM</div></div>
-  </div></div>
-
-  <div style="display:flex;gap:12px;margin-bottom:1rem;font-size:12px;flex-wrap:wrap">
-    <span>🟢 Available</span>
-    <span>🟡 Partial (1-2 booked)</span>
-    <span>🔴 Full (3/3 booked)</span>
-    <span>📹 Our videographer available</span>
-    <span>🎥 Our videographer taken</span>
-  </div>`;
-
-  days.forEach(function(day){
-    html+=`<div class="card" style="margin-bottom:1rem">
-      <div class="card-title" style="font-size:14px;color:var(--dgold)">📅 ${day.label}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">`;
-    day.slots.forEach(function(sk){
-      var bks=vsGetBookings(day.date,sk);
-      var total=bks.length, ourVid=vsOurVideographerCount(day.date,sk);
-      var isFull=total>=3, isPartial=total>0&&total<3;
-      var dot=isFull?'🔴':isPartial?'🟡':'🟢';
-      var vidDot=ourVid>=1?'🎥 Our videographer taken':'📹 Our videographer free';
-      html+=`<div style="border:1.5px solid ${isFull?'#fcc':isPartial?'#ffe082':'#c8e6c9'};border-radius:8px;padding:10px;background:${isFull?'#fff8f8':isPartial?'#fffde7':'#f1f8e9'}">
-        <div style="font-weight:600;font-size:13px;margin-bottom:4px">${VS_SLOT_LABEL[sk]||sk}</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${dot} ${total}/3 booked · ${vidDot}</div>`;
-      var myBks=bks.filter(function(b){return b.bookedBy===CU.id;});
-      var otherBks=bks.filter(function(b){return b.bookedBy!==CU.id;});
-      // My bookings — always visible
-      myBks.forEach(function(b){
-        html+=`<div style="background:#e8f5e9;border:1px solid #b2dfdb;border-radius:5px;padding:5px 8px;margin:3px 0;font-size:11px;cursor:pointer" onclick="viewVsBooking('${b.id}')">
-          🏢 <b>${b.agencyName}</b>${b.needsVideographer?' 📹':''}<br>
-          <span style="color:var(--green);font-size:10px">Your booking</span>
-        </div>`;
-      });
-      if(CU.role==='sales'){
-        // Sales: show count of other bookings but no details
-        if(otherBks.length>0){
-          html+=`<div style="background:#f5f5f5;border:1px solid #e0e0e0;border-radius:5px;padding:5px 8px;margin:3px 0;font-size:11px;color:#999;text-align:center">${otherBks.length} other booking${otherBks.length>1?'s':''} in this slot</div>`;
-        }
-      } else {
-        // Admin / superadmin / art_director / videographer: see all bookings
-        otherBks.forEach(function(b){
-          html+=`<div style="background:#fff;border:1px solid #e0e0e0;border-radius:5px;padding:5px 8px;margin:3px 0;font-size:11px;cursor:pointer" onclick="viewVsBooking('${b.id}')">
-            🏢 <b>${b.agencyName}</b>${b.needsVideographer?' 📹':''}<br>
-            <span style="color:var(--muted)">${getUser(b.bookedBy)?getUser(b.bookedBy).name:'—'}</span>
-          </div>`;
-        });
-      }
-      if(!isFull&&canBook){
-        html+=`<button class="btn btn-gold btn-xs" style="width:100%;margin-top:6px" onclick="openVsBook('${day.date}','${sk}')">+ Book Slot</button>`;
-      }
-      html+=`</div>`;
-    });
-    html+=`</div></div>`;
-  });
-
-  document.getElementById('content').innerHTML=html;
-}
-
-// ── Book modal ────────────────────────────────────────────────────
-function openVsBook(date,slotKey){
-  var bks=vsGetBookings(date,slotKey);
-  if(bks.length>=3){alert('This slot is fully booked (3/3). Please choose another slot.');return;}
-  var canOurVid=vsCanBookOurVideographer(date,slotKey);
-  var dayObj=vsGetDays(14).find(function(d){return d.date===date;})||{label:date};
-
-  document.getElementById('modalTitle').textContent='📹 Book Video Shoot Slot';
-  document.getElementById('modalBody').innerHTML=`
-    <div class="alert alert-info">📅 ${dayObj.label} · ${VS_SLOT_LABEL[slotKey]||slotKey}</div>
-    <div class="alert alert-ok">${bks.length===0?'✅ Slot is empty — first booking':'🟡 '+(3-bks.length)+' space(s) remaining'} · Our videographer: ${canOurVid?'📹 Available':'🎥 Already booked'}</div>
-
-    <div style="font-weight:600;font-size:13px;color:var(--dgold);margin-bottom:8px;margin-top:4px">Agency Information</div>
-    <div class="fr2">
-      <div class="fg"><label class="req">Agency Name</label><input type="text" id="vs_agency" placeholder="Agency name"></div>
-      <div class="fg"><label class="req">Agency Owner Name</label><input type="text" id="vs_owner" placeholder="Full name"></div>
-    </div>
-    <div class="fr2">
-      ${phoneHTMLId('vs_owner_phone','Agency Owner Mobile (WhatsApp)')}
-      <div class="fg"><label class="req">Agency Official Email</label><input type="email" id="vs_email" placeholder="agency@example.com"></div>
-    </div>
-
-    <div style="font-weight:600;font-size:13px;color:var(--dgold);margin-bottom:8px;margin-top:8px">Agent Information</div>
-    <div class="fr2">
-      <div class="fg"><label class="req">Agent Name</label><input type="text" id="vs_agent" placeholder="Agent full name"></div>
-      ${phoneHTMLId('vs_agent_phone','Agent Mobile (WhatsApp)')}
-    </div>
-
-    <div style="font-weight:600;font-size:13px;color:var(--dgold);margin-bottom:8px;margin-top:8px">Production Requirements</div>
-    <div class="fg">
-      <label class="req">Videographer</label>
-      <select id="vs_vidneeded" onchange="onVsVidChange()">
-        <option value="ours"${canOurVid?'':' disabled'}>📹 Use Vincitore videographer${canOurVid?'':' (already booked for this slot)'}</option>
-        <option value="own">🎥 We have our own videographer</option>
-      </select>
-      ${!canOurVid?'<div class="hint" style="color:var(--orange)">⚠️ Vincitore videographer already booked for this slot — another agency has taken the slot. You can still book with your own videographer.</div>':''}
-    </div>
-    <div class="fg" id="vs_edit_wrap">
-      <label class="req">Editing</label>
-      <select id="vs_editneeded">
-        <option value="ours">✂️ Vincitore team will edit</option>
-        <option value="own">🎬 We will edit ourselves</option>
-      </select>
-    </div>
-    <div class="fg"><label>Notes</label><textarea id="vs_notes" placeholder="Any special requirements, concept, duration…"></textarea></div>`;
-
-  document.getElementById('modalFoot').innerHTML=`
-    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-gold" onclick="submitVsBook('${date}','${slotKey}')">Confirm Booking</button>`;
-  document.getElementById('modal').style.display='flex';
-  onVsVidChange();
-}
-
-function onVsVidChange(){
-  var val=document.getElementById('vs_vidneeded');
-  if(!val)return;
-  var editWrap=document.getElementById('vs_edit_wrap');
-  if(editWrap){
-    if(val.value==='own'){
-      editWrap.style.opacity='.4';
-      editWrap.style.pointerEvents='none';
-      document.getElementById('vs_editneeded').value='own';
-    }else{
-      editWrap.style.opacity='1';
-      editWrap.style.pointerEvents='auto';
-    }
-  }
-}
-
-// Reusable phone HTML with custom IDs
-function phoneHTMLId(idBase, labelText){
-  return `<div class="fg">
-    <label class="req">${labelText}</label>
-    <div class="phone-wrap">
-      <span class="phone-cc">+</span>
-      <input type="text" id="${idBase}_cc" placeholder="971" maxlength="4"
-        style="width:64px;border:none;background:var(--egold);font-weight:600;color:var(--dgold);padding:9px 6px;outline:none;text-align:center"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-      <span style="padding:9px 4px;color:var(--border);font-size:18px;line-height:1;background:var(--egold)">-</span>
-      <input type="tel" id="${idBase}_num" placeholder="509082142" class="phone-num"
-        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-    </div>
-    <div class="hint">Format: +[country code]-[number]</div>
-  </div>`;
-}
-
-function getPhoneById(idBase){
-  var cc=(document.getElementById(idBase+'_cc')||{}).value||'';
-  var num=(document.getElementById(idBase+'_num')||{}).value||'';
-  return cc&&num?'+'+cc+'-'+num:'';
-}
-
-function submitVsBook(date,slotKey){
-  var agency  = document.getElementById('vs_agency').value.trim();
-  var owner   = document.getElementById('vs_owner').value.trim();
-  var ownerPh = getPhoneById('vs_owner_phone');
-  var email   = document.getElementById('vs_email').value.trim();
-  var agent   = document.getElementById('vs_agent').value.trim();
-  var agentPh = getPhoneById('vs_agent_phone');
-  var needsVid= document.getElementById('vs_vidneeded').value==='ours';
-  var needsEdit= document.getElementById('vs_editneeded').value==='ours';
-  var notes   = document.getElementById('vs_notes').value.trim();
-
-  if(!agency||!owner||!ownerPh||!email||!agent||!agentPh){alert('Please fill all required fields.');return;}
-  if(vsGetBookings(date,slotKey).length>=3){alert('Slot just became full. Please choose another.');closeModal();renderVideoShoots();return;}
-  if(needsVid&&!vsCanBookOurVideographer(date,slotKey)){alert('Our videographer was just booked by another agency. Please select your own videographer or choose a different slot.');return;}
-
-  var id='vs'+Date.now()+Math.random().toString(36).substr(2,5);
-  var booking={
-    id, date, slotKey,
-    agencyName:agency, ownerName:owner, ownerPhone:ownerPh, agencyEmail:email,
-    agentName:agent, agentPhone:agentPh,
-    needsVideographer:needsVid, needsEditing:needsVid?needsEdit:false,
-    notes, bookedBy:CU.id, status:'confirmed',
-    createdAt:new Date().toISOString()
-  };
-
-  DB.ref('/video_bookings/'+id).set(booking).then(function(){
-    showSaved();
-    closeModal();
-    renderVideoShoots();
-  }).catch(function(e){alert('Error: '+e.message);});
-}
-
-// ── View booking ──────────────────────────────────────────────────
-function viewVsBooking(id){
-  var b=CACHE.videoBookings[id]; if(!b)return;
-  // Sales can only view their own bookings
-  if(CU.role==='sales'&&b.bookedBy!==CU.id){alert('You can only view your own video shoot bookings.');return;}
-  var rep=getUser(b.bookedBy);
-  var dayObj=vsGetDays(14).find(function(d){return d.date===b.date;})||{label:b.date};
-  var canCancel=CU.role==='superadmin'||CU.role==='admin';
-
-  document.getElementById('modalTitle').textContent='Video Shoot Details';
-  document.getElementById('modalBody').innerHTML=`
-    <div class="alert alert-info">📅 ${dayObj.label||b.date} · ${VS_SLOT_LABEL[b.slotKey]||b.slotKey}</div>
-    <div class="g2" style="margin-bottom:1rem">
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Status</div><span class="badge badge-${b.status}">${b.status}</span></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Booked By</div><strong>${rep?rep.name:'—'}</strong></div>
-    </div>
-    <div style="font-weight:600;font-size:12px;color:var(--dgold);margin-bottom:6px">Agency</div>
-    <div class="g2" style="margin-bottom:1rem">
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Agency Name</div><strong style="font-size:15px">${b.agencyName}</strong></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Owner</div>${b.ownerName}</div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Owner Phone</div><a href="https://wa.me/${b.ownerPhone.replace(/[^0-9]/g,'')}" style="color:var(--blue)">${b.ownerPhone} 💬</a></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Email</div><a href="mailto:${b.agencyEmail}" style="color:var(--blue)">${b.agencyEmail}</a></div>
-    </div>
-    <div style="font-weight:600;font-size:12px;color:var(--dgold);margin-bottom:6px">Agent</div>
-    <div class="g2" style="margin-bottom:1rem">
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Agent Name</div><strong>${b.agentName}</strong></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Agent Phone</div><a href="https://wa.me/${b.agentPhone.replace(/[^0-9]/g,'')}" style="color:var(--blue)">${b.agentPhone} 💬</a></div>
-    </div>
-    <div style="font-weight:600;font-size:12px;color:var(--dgold);margin-bottom:6px">Production</div>
-    <div class="g2" style="margin-bottom:1rem">
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Videographer</div><span style="font-weight:600;color:${b.needsVideographer?'var(--blue)':'var(--green)'}">${b.needsVideographer?'📹 Vincitore videographer':'🎥 Own videographer'}</span></div>
-      <div><div style="font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Editing</div><span style="font-weight:600">${b.needsEditing?'✂️ Vincitore team':'🎬 Self-editing'}</span></div>
-    </div>
-    ${b.notes?`<div style="background:var(--lgold);padding:10px;border-radius:6px;font-size:13px;margin-bottom:1rem">${b.notes}</div>`:''}
-    <div style="border-top:1px solid var(--border);padding-top:10px;font-size:11px;color:var(--muted)">Booked: ${fmtDT(b.createdAt)}</div>`;
-
-  var foot=`<button class="btn btn-outline" onclick="closeModal()">Close</button>`;
-  if(canCancel&&b.status!=='cancelled') foot+=`<button class="btn btn-red btn-sm" onclick="cancelVsBook('${id}')">Cancel</button>`;
-  document.getElementById('modalFoot').innerHTML=foot;
-  document.getElementById('modal').style.display='flex';
-}
-
-function cancelVsBook(id){
-  if(!confirm('Cancel this video shoot booking?'))return;
-  DB.ref('/video_bookings/'+id+'/status').set('cancelled').then(function(){showSaved();closeModal();});
-}
 
 // ── Export ────────────────────────────────────────────────────────
 function exportCSV(){
