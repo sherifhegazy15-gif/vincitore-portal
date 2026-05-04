@@ -327,6 +327,13 @@ document.getElementById('topbarLogo').src=LOGO;
 
 // ── Init & Migration ──────────────────────────────────────────────
 async function init(){
+  // Connection timeout — if Firebase doesn't respond in 8 seconds show error
+  var connTimeout=setTimeout(function(){
+    if(document.getElementById('loginForm').style.display==='none'&&document.getElementById('connectingMsg').style.display!=='none'){
+      document.getElementById('connectingMsg').innerHTML='❌ Connection is taking too long.<br><small>Check your internet and <a href="" style="color:var(--gold)">refresh the page</a>.</small>';
+    }
+  },8000);
+
   try{
     // Read only what we need — NOT the whole DB
     await new Promise(r=>setTimeout(r,500));
@@ -394,6 +401,7 @@ async function init(){
     }
 
     startListeners();
+    clearTimeout(connTimeout);
     document.getElementById('connectingMsg').style.display='none';
 
     // Restore session on refresh
@@ -413,7 +421,9 @@ async function init(){
     },800);
 
   }catch(e){
-    document.getElementById('connectingMsg').innerHTML='❌ Connection failed: '+e.message+'<br><small>Check your internet connection and refresh.</small>';
+    clearTimeout(connTimeout);
+    document.getElementById('connectingMsg').innerHTML='❌ Error: '+e.message+'<br><small><a href="" style="color:var(--gold)">Refresh to try again</a></small>';
+    console.error('Init error:', e);
   }
 }
 
