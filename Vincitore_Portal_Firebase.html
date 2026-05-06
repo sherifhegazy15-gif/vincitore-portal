@@ -833,14 +833,19 @@ function getPhoneValue(){
 }
 
 // ── "Book on behalf of" dropdown ─────────────────────────────────
-// lockedUserId: if set, the field is read-only (slot already has an owner)
+// lockedUserId: the current slot owner (if any)
+// If canEditAnyBooking → show free dropdown regardless of owner
+// If not canEditAnyBooking but canViewOthers → locked to slot owner
+// If neither → not shown (sales books for themselves only)
 function behalfHTML(lockedUserId){
-  if(!can('canViewOthers')) return ''; // sales users don't see this at all
+  if(!can('canViewOthers')&&!can('canEditAnyBooking')) return ''; // sales — no dropdown shown
 
-  if(lockedUserId){
-    // Slot already owned — lock to that user, no choice allowed
-    var lockedUser = getUser(lockedUserId);
-    var lockedName = lockedUser ? lockedUser.name : '—';
+  var allUsers=Object.values(CACHE.users).filter(u=>u.id!==CU.id);
+
+  if(lockedUserId && !can('canEditAnyBooking')){
+    // Has canViewOthers but NOT canEditAnyBooking — locked to slot owner
+    var lockedUser=getUser(lockedUserId);
+    var lockedName=lockedUser?lockedUser.name:'—';
     return `<div class="fg" style="margin-bottom:1rem">
       <label>Booking attributed to</label>
       <div style="padding:9px 12px;background:var(--egold);border:1.5px solid var(--gold);border-radius:8px;font-weight:600;color:var(--dgold);font-size:13px">
@@ -851,17 +856,19 @@ function behalfHTML(lockedUserId){
     </div>`;
   }
 
-  // Free slot — show full dropdown
-  var salesUsers = Object.values(CACHE.users).filter(u=>u.id!==CU.id);
-  if(!salesUsers.length) return '';
-  var opts = salesUsers.map(u=>`<option value="${u.id}">${u.name} (${(roles()[u.role]||{}).label||u.role})</option>`).join('');
+  // canEditAnyBooking OR no slot owner yet — free dropdown
+  // If there's an owner, pre-select them but allow changing
+  var opts=allUsers.map(u=>`<option value="${u.id}" ${u.id===lockedUserId?'selected':''}>${u.name} (${(roles()[u.role]||{}).label||u.role})</option>`).join('');
+  var hint=lockedUserId&&can('canEditAnyBooking')
+    ?'<div class="hint" style="color:var(--blue)">ℹ️ Slot is currently owned by <b>'+((getUser(lockedUserId)||{}).name||'—')+'</b> — you can assign this booking to any rep</div>'
+    :'<div class="hint">The selected rep will own this slot — future additions must be by the same rep (unless overridden by permissions)</div>';
   return `<div class="fg" style="margin-bottom:1rem">
     <label>Book on behalf of</label>
     <select id="f_behalf">
       <option value="">— Myself (${CU.name}) —</option>
       ${opts}
     </select>
-    <div class="hint">The selected rep will own this slot — future additions must be by the same rep</div>
+    ${hint}
   </div>`;
 }
 
@@ -955,13 +962,12 @@ function submitBook(venueId,date,slotKey,isAdd){
   if(!agency||!owner){alert('Please fill all required fields.');return;}
   if(!validatePhone()){alert('Please enter a valid phone number in the format: +[country code]-[number]\nExample: +971-509082142');return;}
 
-  // Slot ownership check — slot belongs to behalfId's user
+  // Slot ownership check — canEditAnyBooking bypasses all slot owner restrictions
   var slotOw=slotOwner(venueId,date,slotKey);
-  if(!isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id){
-    alert('Slot was just taken by another rep. Please choose another slot.');closeModal();renderCalendar();return;
-  }
-  if(isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id&&!can('canEditAnyBooking')){
-    alert('You do not have permission to add to another rep\'s slot.');closeModal();return;
+  if(slotOw&&slotOw!==behalfId&&slotOw!==CU.id&&!can('canEditAnyBooking')){
+    if(!isAdd){alert('Slot was just taken by another rep. Please choose another slot.');closeModal();renderCalendar();}
+    else{alert('You do not have permission to add to another rep\'s slot.');}
+    return;
   }
 
   // Capacity check
