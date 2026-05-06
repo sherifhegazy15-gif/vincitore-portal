@@ -224,6 +224,7 @@ input,select,textarea,button{font-family:inherit}
       <img id="authLogo" alt="Vincitore">
       <h1>VINCITORE REALTY</h1>
       <p>AGENCY BRIEFING PORTAL</p>
+      <p style="font-size:10px;color:#ccc;margin-top:4px;letter-spacing:.08em">Version 2.8</p>
     </div>
     <div id="connectingMsg" class="connecting">⏳ Connecting to database…</div>
     <div id="loginForm" style="display:none">
@@ -288,27 +289,31 @@ var CACHE={users:{},eventsMeta:{},cfg:null,bookings:{},videoBookings:{}};
 
 // All configurable permissions
 var ALL_PERMS=[
-  {key:'canBook',           label:'Book a slot'},
-  {key:'canAddToOwnSlot',   label:'Add agencies to own slot'},
-  {key:'canViewOwn',        label:'View own booking details'},
-  {key:'canViewOthers',     label:'View others\' booking details'},
-  {key:'canMarkAttendance', label:'Mark attended / no-show'},
-  {key:'canCancel',         label:'Cancel bookings'},
-  {key:'canExport',         label:'Export CSV'},
-  {key:'canManageUsers',    label:'Manage users'},
-  {key:'canManageRoles',    label:'Manage roles & permissions'},
-  {key:'canManageEvents',   label:'Create & manage events'},
-  {key:'canManageSettings', label:'Manage event settings'},
+  {key:'canBook',              label:'Book a briefing slot'},
+  {key:'canAddToOwnSlot',      label:'Add agencies to own briefing slot'},
+  {key:'canEditAnyBooking',    label:'Add/edit agencies on ANY briefing slot'},
+  {key:'canViewOwn',           label:'View own booking details'},
+  {key:'canViewOthers',        label:'View others\' booking details'},
+  {key:'canMarkAttendance',    label:'Mark attended / no-show'},
+  {key:'canCancel',            label:'Cancel bookings'},
+  {key:'canExport',            label:'Export CSV'},
+  {key:'canManageUsers',       label:'Manage users'},
+  {key:'canManageRoles',       label:'Manage roles & permissions'},
+  {key:'canManageEvents',      label:'Create & manage events'},
+  {key:'canManageSettings',    label:'Manage event settings'},
+  {key:'canBookVideoShoots',   label:'Book video shoot slots'},
+  {key:'canEditVideoShoots',   label:'Edit / cancel video shoot bookings'},
+  {key:'canViewAllVideoShoots',label:'View all video shoot bookings'},
 ];
 
 // Default roles stored in Firebase under /roles
 var DEFAULT_ROLES={
-  superadmin:   {label:'Super Admin',   system:true, perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:true,canExport:true,canManageUsers:true,canManageRoles:true,canManageEvents:true,canManageSettings:true}},
-  admin:        {label:'Admin',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  sales:        {label:'Sales',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canViewOwn:true,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  operation:    {label:'Operation',     system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:true,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  art_director: {label:'Art Director',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
-  videographer: {label:'Videographer',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false}},
+  superadmin:   {label:'Super Admin',   system:true, perms:{canBook:true,canAddToOwnSlot:true,canEditAnyBooking:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:true,canExport:true,canManageUsers:true,canManageRoles:true,canManageEvents:true,canManageSettings:true,canBookVideoShoots:true,canEditVideoShoots:true,canViewAllVideoShoots:true}},
+  admin:        {label:'Admin',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canEditAnyBooking:true,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false,canBookVideoShoots:true,canEditVideoShoots:true,canViewAllVideoShoots:true}},
+  sales:        {label:'Sales',         system:false,perms:{canBook:true,canAddToOwnSlot:true,canEditAnyBooking:false,canViewOwn:true,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false,canBookVideoShoots:true,canEditVideoShoots:false,canViewAllVideoShoots:false}},
+  operation:    {label:'Operation',     system:false,perms:{canBook:false,canAddToOwnSlot:false,canEditAnyBooking:false,canViewOwn:true,canViewOthers:true,canMarkAttendance:true,canCancel:false,canExport:true,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false,canBookVideoShoots:false,canEditVideoShoots:false,canViewAllVideoShoots:true}},
+  art_director: {label:'Art Director',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canEditAnyBooking:false,canViewOwn:false,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false,canBookVideoShoots:false,canEditVideoShoots:false,canViewAllVideoShoots:true}},
+  videographer: {label:'Videographer',  system:false,perms:{canBook:false,canAddToOwnSlot:false,canEditAnyBooking:false,canViewOwn:false,canViewOthers:false,canMarkAttendance:false,canCancel:false,canExport:false,canManageUsers:false,canManageRoles:false,canManageEvents:false,canManageSettings:false,canBookVideoShoots:false,canEditVideoShoots:false,canViewAllVideoShoots:true}},
 };
 
 var DEFAULT_EVENT_CFG={
@@ -352,11 +357,23 @@ async function init(){
     if(!hasRoles){
       await DB.ref('/roles').set(DEFAULT_ROLES);
     }else{
-      // Add new roles if missing (art_director, videographer)
+      // Add missing permissions to existing roles (non-destructive)
       var existingRoles=rolesSnap.val()||{};
       var updates={};
+      // Add new role types if missing
       if(!existingRoles.art_director) updates['/roles/art_director']=DEFAULT_ROLES.art_director;
       if(!existingRoles.videographer)  updates['/roles/videographer']=DEFAULT_ROLES.videographer;
+      // Add new permission keys to all existing roles if missing
+      var newPerms=['canEditAnyBooking','canBookVideoShoots','canEditVideoShoots','canViewAllVideoShoots'];
+      Object.entries(existingRoles).forEach(([roleKey,role])=>{
+        newPerms.forEach(function(perm){
+          if((role.perms||{})[perm]===undefined){
+            var defaultVal=(DEFAULT_ROLES[roleKey]&&DEFAULT_ROLES[roleKey].perms)?
+              (DEFAULT_ROLES[roleKey].perms[perm]||false):false;
+            updates['/roles/'+roleKey+'/perms/'+perm]=defaultVal;
+          }
+        });
+      });
       if(Object.keys(updates).length) await DB.ref().update(updates);
     }
 
@@ -532,7 +549,7 @@ function switchEvent(eid){if(eid!==ACTIVE_EID)DB.ref('/active_event').set(eid);}
 
 // ── Nav ───────────────────────────────────────────────────────────
 function buildSidebar(){
-  var isCreative=CU.role==='art_director'||CU.role==='videographer';
+  var isCreative=!can('canBookVideoShoots')&&!can('canViewOthers');
   var items=[
     {id:'dashboard',   icon:'📊',label:'Dashboard',        show:!isCreative},
     {id:'videoshoots', icon:'🎬',label:'Video Shoots',      show:true},
@@ -756,8 +773,8 @@ function renderCalendar(){
             html+=`<div class="bk-chip bk-chip-other" onclick="event.stopPropagation();viewBk('${b.id}')">🏢 ${b.agencyName.length>16?b.agencyName.substring(0,15)+'…':b.agencyName} (${b.attendees})</div>`;
           });
           html+=`<div style="font-size:10px;color:var(--muted);margin-top:3px">By: ${ownerUser?ownerUser.name:'—'} · ${pax}/${cap} pax</div>`;
-          if(!isFull&&can('canAddToOwnSlot')){
-            html+=`<div class="add-btn" onclick="event.stopPropagation();openAddToSlot('${venue.id}','${date}','${slot.key}')">+ Add agency for ${ownerUser?ownerUser.name:'rep'}</div>`;
+          if(!isFull&&can('canEditAnyBooking')){
+            html+=`<div class="add-btn" onclick="event.stopPropagation();openAddToSlot('${venue.id}','${date}','${slot.key}')">+ Add agency to this slot</div>`;
           }
         }else{
           html+=`<div class="bk-chip bk-chip-masked">${pax} pax booked</div>`;
@@ -859,7 +876,7 @@ function openBook(venueId,date,slotKey){
   var owner = slotOwner(venueId,date,slotKey);
   if(owner){
     // Slot already has an owner
-    if(owner===CU.id || can('canViewOthers')){
+    if(owner===CU.id || can('canEditAnyBooking')){
       openAddToSlot(venueId,date,slotKey);
     } else {
       alert('This slot was just booked by another rep. Please choose a different slot.');
@@ -892,11 +909,11 @@ function openBook(venueId,date,slotKey){
 
 // ── Add more agencies to existing slot ────────────────────────────
 function openAddToSlot(venueId,date,slotKey){
-  if(!can('canAddToOwnSlot')){alert('You do not have permission to add agencies to a slot.');return;}
+  if(!can('canAddToOwnSlot')&&!can('canEditAnyBooking')){alert('You do not have permission to add agencies to a slot.');return;}
   var owner = slotOwner(venueId,date,slotKey);
-  // Sales user can only add to their own slot
-  if(owner && owner!==CU.id && !can('canViewOthers')){
-    alert('This slot belongs to another rep. You can only add agencies to your own slot.');return;
+  // canEditAnyBooking allows adding to any slot; otherwise restricted to own
+  if(owner && owner!==CU.id && !can('canEditAnyBooking')){
+    alert('This slot belongs to another rep. You do not have permission to edit it.');return;
   }
   var venue=getVenue(venueId), slot=getSlots().find(s=>s.key===slotKey);
   var pax=slotPax(venueId,date,slotKey), remaining=(venue?venue.capacity:50)-pax;
@@ -943,8 +960,8 @@ function submitBook(venueId,date,slotKey,isAdd){
   if(!isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id){
     alert('Slot was just taken by another rep. Please choose another slot.');closeModal();renderCalendar();return;
   }
-  if(isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id&&!can('canViewOthers')){
-    alert('You cannot add to another rep\'s slot.');closeModal();return;
+  if(isAdd&&slotOw&&slotOw!==behalfId&&slotOw!==CU.id&&!can('canEditAnyBooking')){
+    alert('You do not have permission to add to another rep\'s slot.');closeModal();return;
   }
 
   // Capacity check
@@ -1411,8 +1428,8 @@ function vsCanBook(date,slotKey){ return vsGetBookings(date,slotKey).length<3; }
 
 // ── Render ────────────────────────────────────────────────────────
 function renderVideoShoots(){
-  var isCreative=CU.role==='art_director'||CU.role==='videographer';
-  var canBook=CU.role==='sales'||CU.role==='admin'||CU.role==='superadmin';
+  var isCreative=!can('canBookVideoShoots')&&!can('canViewOthers');
+  var canBook=can('canBookVideoShoots');
   var days=vsGetDays(14);
 
   var html=`<div class="page-header"><div class="ph-row">
@@ -1603,10 +1620,10 @@ function submitVsBook(date,slotKey){
 function viewVsBooking(id){
   var b=CACHE.videoBookings[id]; if(!b)return;
   // Sales can only view their own bookings
-  if(CU.role==='sales'&&b.bookedBy!==CU.id){alert('You can only view your own video shoot bookings.');return;}
+  if(!can('canViewAllVideoShoots')&&!can('canEditVideoShoots')&&b.bookedBy!==CU.id){alert('You can only view your own video shoot bookings.');return;}
   var rep=getUser(b.bookedBy);
   var dayObj=vsGetDays(14).find(function(d){return d.date===b.date;})||{label:b.date};
-  var canCancel=CU.role==='superadmin'||CU.role==='admin';
+  var canCancel=can('canEditVideoShoots')&&b.status!=='cancelled';
 
   document.getElementById('modalTitle').textContent='Video Shoot Details';
   document.getElementById('modalBody').innerHTML=`
