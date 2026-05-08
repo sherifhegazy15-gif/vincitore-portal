@@ -653,14 +653,18 @@ function renderDashboard(){
   </div>`;
   if(can('canViewOthers')){
     html+=`<div class="card" style="margin-top:1rem"><div class="card-title">👥 Rep Performance</div>
-      <table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Bookings</th><th>Pax</th><th>Attended</th><th>No-show</th></tr></thead><tbody>`;
+      <table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Bookings</th><th>Registered Pax</th><th>Attended</th><th>Actual Pax</th><th>No-show</th></tr></thead><tbody>`;
     Object.values(CACHE.users).filter(u=>u.id!==CU.id).forEach(u=>{
       var ub=active.filter(b=>b.bookedBy===u.id);
       if(!ub.length)return;
+      var attendedBks=ub.filter(b=>b.status==='attended');
+      var actualPax=attendedBks.reduce((s,b)=>s+(b.paxAttended!==undefined?b.paxAttended:0),0);
       html+=`<tr><td><strong>${u.name}</strong></td>
         <td style="font-size:11px;color:var(--muted)">${(roles()[u.role]||{}).label||u.role}</td>
-        <td>${ub.length}</td><td>${ub.reduce((s,b)=>s+parseInt(b.attendees||1),0)}</td>
-        <td>${ub.filter(b=>b.status==='attended').length}</td>
+        <td>${ub.length}</td>
+        <td>${ub.reduce((s,b)=>s+parseInt(b.attendees||1),0)}</td>
+        <td>${attendedBks.length}</td>
+        <td><strong style="color:var(--green)">${actualPax}</strong></td>
         <td>${ub.filter(b=>b.status==='noshow').length}</td></tr>`;
     });
     html+='</tbody></table></div>';
@@ -1075,7 +1079,7 @@ function renderMyBookings(){
   </div></div>`;
   if(!mine.length){html+=`<div class="empty"><div class="ei">📋</div><p>No bookings yet</p></div>`;}
   else{
-    html+=`<div class="card"><table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Pax</th><th>Status</th><th></th></tr></thead><tbody>`;
+    html+=`<div class="card"><table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Registered</th><th>Attended</th><th>Status</th><th></th></tr></thead><tbody>`;
     mine.forEach(b=>{
       var v=getVenue(b.venueId),s=getSlots().find(x=>x.key===b.slotKey);
       html+=`<tr style="${b.status==='cancelled'?'opacity:.5':''}">
@@ -1083,7 +1087,9 @@ function renderMyBookings(){
         <td style="font-size:11px">${v?v.name.split('–')[0].trim():'—'}</td>
         <td><strong>${b.agencyName}</strong></td><td>${b.ownerName}</td>
         <td><a href="tel:${b.phone}" style="color:var(--blue)">${b.phone}</a></td>
-        <td>${b.attendees}</td><td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td>${b.attendees}</td>
+        <td>${b.status==='attended'&&b.paxAttended!==undefined?`<span style="color:var(--green);font-weight:600">${b.paxAttended}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
         <td><button class="btn btn-outline btn-xs" onclick="viewBk('${b.id}')">View</button></td></tr>`;
     });
     html+='</tbody></table></div>';
@@ -1111,7 +1117,7 @@ function renderAllBookings(){
 function filterBk(s){var all=allBk().sort((a,b)=>a.date>b.date?1:-1);document.getElementById('bkTbl').innerHTML=buildBkTbl(s==='all'?all:all.filter(b=>b.status===s));}
 function buildBkTbl(bks){
   if(!bks.length)return'<div class="empty"><div class="ei">📋</div><p>No bookings</p></div>';
-  var html=`<table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Pax</th><th>Booked By</th><th>Status</th><th></th></tr></thead><tbody>`;
+  var html=`<table class="tbl"><thead><tr><th>Date</th><th>Slot</th><th>Venue</th><th>Agency</th><th>Owner</th><th>Phone</th><th>Registered</th><th>Attended</th><th>Booked By</th><th>Status</th><th></th></tr></thead><tbody>`;
   bks.forEach(b=>{
     var v=getVenue(b.venueId),s=getSlots().find(x=>x.key===b.slotKey),rep=getUser(b.bookedBy);
     html+=`<tr style="${b.status==='cancelled'?'opacity:.5':''}">
@@ -1119,7 +1125,9 @@ function buildBkTbl(bks){
       <td style="font-size:11px">${v?v.name.split('–')[0].trim():'—'}</td>
       <td><strong>${b.agencyName}</strong></td><td>${b.ownerName}</td>
       <td><a href="tel:${b.phone}" style="color:var(--blue)">${b.phone}</a></td>
-      <td>${b.attendees}</td><td style="font-size:12px">${rep?rep.name:'—'}</td>
+      <td>${b.attendees}</td>
+      <td>${b.status==='attended'&&b.paxAttended!==undefined?`<span style="color:var(--green);font-weight:600">${b.paxAttended}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:12px">${rep?rep.name:'—'}</td>
       <td><span class="badge badge-${b.status}">${b.status}</span></td>
       <td><button class="btn btn-outline btn-xs" onclick="viewBk('${b.id}')">View</button></td></tr>`;
   });
@@ -1672,10 +1680,13 @@ function cancelVsBook(id){
 // ── Export ────────────────────────────────────────────────────────
 function exportCSV(){
   if(!can('canExport')){alert('Access denied.');return;}
-  var rows=[['ID','Date','Slot','Venue','Agency','Owner','Phone','Attendees','Booked By','Status','Notes','Created At']];
+  var rows=[['ID','Date','Slot','Venue','Agency','Owner','Phone','Registered Pax','Attended Pax','Booked By','Status','Notes','Created At']];
   allBk().forEach(b=>{
     var v=getVenue(b.venueId),s=getSlots().find(x=>x.key===b.slotKey),rep=getUser(b.bookedBy);
-    rows.push([b.id,b.date,s?s.label:'',v?v.name:'',b.agencyName,b.ownerName,b.phone,b.attendees,rep?rep.name:'',b.status,b.notes||'',fmtDT(b.createdAt)]);
+    rows.push([b.id,b.date,s?s.label:'',v?v.name:'',b.agencyName,b.ownerName,b.phone,
+      b.attendees,
+      b.status==='attended'&&b.paxAttended!==undefined?b.paxAttended:'',
+      rep?rep.name:'',b.status,b.notes||'',fmtDT(b.createdAt)]);
   });
   var csv=rows.map(r=>r.map(v=>'"'+(v+'').replace(/"/g,'""')+'"').join(',')).join('\n');
   var a=document.createElement('a');
