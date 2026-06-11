@@ -224,7 +224,7 @@ input,select,textarea,button{font-family:inherit}
       <img id="authLogo" alt="Vincitore">
       <h1>VINCITORE REALTY</h1>
       <p>AGENCY BRIEFING PORTAL</p>
-      <p style="font-size:10px;color:#ccc;margin-top:4px;letter-spacing:.08em">Version 2.8</p>
+      <p style="font-size:10px;color:#ccc;margin-top:4px;letter-spacing:.08em">Version 2.10</p>
     </div>
     <div id="connectingMsg" class="connecting">⏳ Connecting to database…</div>
     <div id="loginForm" style="display:none">
@@ -282,6 +282,20 @@ firebase.initializeApp({
 });
 const DB=firebase.database();
 var LOGO='';
+
+// ── Global error surfacer for Firebase writes ─────────────────────
+// Wraps any DB write promise. Surfaces error to user as alert + console.
+function dbWrite(promise, opName){
+  return promise.catch(function(err){
+    console.error('[DB write fail: '+(opName||'?')+']', err);
+    var msg='⚠️ Failed to save: '+(opName||'operation')+'\n\n'+(err&&err.message?err.message:err);
+    if(err&&err.code==='PERMISSION_DENIED'){
+      msg+='\n\nThis means your Firebase Realtime Database rules are blocking writes.\nGo to Firebase Console → Realtime Database → Rules and ensure:\n{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}\nClick "Publish".';
+    }
+    alert(msg);
+    throw err;
+  });
+}
 
 // ── Constants & State ─────────────────────────────────────────────
 var CU=null,PAGE='dashboard',VENUE_IDX=0,ACTIVE_EID=null;
@@ -545,7 +559,7 @@ function buildEventSwitcher(){
     sel.appendChild(o);
   });
 }
-function switchEvent(eid){if(eid!==ACTIVE_EID)DB.ref('/active_event').set(eid);}
+function switchEvent(eid){if(eid!==ACTIVE_EID)dbWrite(DB.ref('/active_event').set(eid),'switch event');}
 
 // ── Nav ───────────────────────────────────────────────────────────
 function buildSidebar(){
@@ -992,9 +1006,8 @@ function submitBook(venueId,date,slotKey,isAdd){
     status:'confirmed',
     createdAt:new Date().toISOString()
   };
-  DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).set(bk)
-    .then(()=>{showSaved();closeModal();})
-    .catch(e=>alert('Error saving: '+e.message));
+  dbWrite(DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).set(bk),'create booking')
+    .then(()=>{showSaved();closeModal();});
 }
 
 // ── View booking ──────────────────────────────────────────────────
@@ -1057,15 +1070,15 @@ function confirmAttend(id){
   var pax=parseInt(document.getElementById('paxAttended').value)||0;
   var b=CACHE.bookings[id];
   var updates={status:'attended', paxAttended:pax, attendedAt:new Date().toISOString()};
-  DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update(updates).then(()=>{showSaved();closeModal();});
+  dbWrite(DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update(updates),'mark attended').then(()=>{showSaved();closeModal();});
 }
 
 function setStatus(id,status,paxAttended){
   var updates={status:status};
   if(status==='attended') updates.paxAttended=paxAttended||0;
-  DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update(updates).then(()=>{showSaved();closeModal();});
+  dbWrite(DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update(updates),'update status').then(()=>{showSaved();closeModal();});
 }
-function cancelBk(id){if(!confirm('Cancel this booking?'))return;DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update({status:'cancelled',cancelledAt:new Date().toISOString(),cancelledBy:CU.id}).then(()=>{showSaved();closeModal();});}
+function cancelBk(id){if(!confirm('Cancel this booking?'))return;dbWrite(DB.ref('/events/'+ACTIVE_EID+'/bookings/'+id).update({status:'cancelled',cancelledAt:new Date().toISOString(),cancelledBy:CU.id}),'cancel booking').then(()=>{showSaved();closeModal();});}
 function closeModal(){document.getElementById('modal').style.display='none';}
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
 
@@ -1200,10 +1213,10 @@ function saveUser(id){
   if(!name||!username){alert('Name and username required.');return;}
   if(!id&&!pass){alert('Password required for new users.');return;}
   if(Object.values(CACHE.users).find(u=>u.username===username&&u.id!==id)){alert('Username taken.');return;}
-  if(id){var upd={name,username,role};if(pass)upd.password=pass;DB.ref('/users/'+id).update(upd).then(()=>{showSaved();closeModal();});}
-  else{var nid='u'+Date.now();DB.ref('/users/'+nid).set({id:nid,username,password:pass,name,role}).then(()=>{showSaved();closeModal();});}
+  if(id){var upd={name,username,role};if(pass)upd.password=pass;dbWrite(DB.ref('/users/'+id).update(upd),'save user').then(()=>{showSaved();closeModal();});}
+  else{var nid='u'+Date.now();dbWrite(DB.ref('/users/'+nid).set({id:nid,username,password:pass,name,role}),'add user').then(()=>{showSaved();closeModal();});}
 }
-function delUser(id){var u=CACHE.users[id];if(!confirm('Remove "'+u.name+'"?'))return;DB.ref('/users/'+id).remove().then(()=>showSaved());}
+function delUser(id){var u=CACHE.users[id];if(!confirm('Remove "'+u.name+'"?'))return;dbWrite(DB.ref('/users/'+id).remove(),'delete user').then(()=>showSaved());}
 
 // ── Roles & Permissions ───────────────────────────────────────────
 function renderRoles(){
@@ -1252,7 +1265,7 @@ function renderRoles(){
 }
 
 function togglePerm(roleKey,perm,val){
-  DB.ref('/roles/'+roleKey+'/perms/'+perm).set(val).then(()=>showSaved());
+  dbWrite(DB.ref('/roles/'+roleKey+'/perms/'+perm).set(val),'toggle permission').then(()=>showSaved());
 }
 function openAddRole(){
   document.getElementById('modalTitle').textContent='New Role';
@@ -1271,16 +1284,16 @@ function saveNewRole(){
   if(roles()[key]){alert('Role key already exists.');return;}
   var newRole={label,system:false,perms:{}};
   ALL_PERMS.forEach(p=>{newRole.perms[p.key]=false;});
-  DB.ref('/roles/'+key).set(newRole).then(()=>{showSaved();closeModal();});
+  dbWrite(DB.ref('/roles/'+key).set(newRole),'create role').then(()=>{showSaved();closeModal();});
 }
 function editRole(key){
   var r=roles()[key];
   document.getElementById('modalTitle').textContent='Rename Role';
   document.getElementById('modalBody').innerHTML=`<div class="fg"><label class="req">Role Label</label><input type="text" id="r_label" value="${r.label||key}"></div>`;
-  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="DB.ref('/roles/${key}/label').set(document.getElementById('r_label').value.trim()).then(()=>{showSaved();closeModal();})">Save</button>`;
+  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="dbWrite(DB.ref('/roles/${key}/label').set(document.getElementById('r_label').value.trim()),'rename role').then(()=>{showSaved();closeModal();})">Save</button>`;
   document.getElementById('modal').style.display='flex';
 }
-function delRole(key){if(!confirm('Delete role "'+key+'"?'))return;DB.ref('/roles/'+key).remove().then(()=>{showSaved();});}
+function delRole(key){if(!confirm('Delete role "'+key+'"?'))return;dbWrite(DB.ref('/roles/'+key).remove(),'delete role').then(()=>{showSaved();});}
 
 // ── Events ────────────────────────────────────────────────────────
 function renderEvents(){
@@ -1314,19 +1327,33 @@ function openNewEvent(){
       <div class="fg"><label class="req">End Date</label><input type="date" id="ne_end"></div>
     </div>
     <div class="alert alert-info">Slot times, venues and capacity can be configured in Settings after creating.</div>`;
-  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="createEvent()">Create Event</button>`;
+  document.getElementById('modalFoot').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="submitNewEvent()">Create Event</button>`;
   document.getElementById('modal').style.display='flex';
 }
-function createEvent(){
-  var name=document.getElementById('ne_name').value.trim();
-  var start=document.getElementById('ne_start').value;
-  var end=document.getElementById('ne_end').value;
-  if(!name||!start||!end){alert('All fields required.');return;}
-  var eid='event_'+Date.now();
-  var newCfg={...DEFAULT_EVENT_CFG,name,startDate:start,endDate:end};
-  DB.ref('/events/'+eid+'/config').set(newCfg).then(()=>{
-    return DB.ref('/events_meta/'+eid).set({name,createdAt:new Date().toISOString()});
-  }).then(()=>{showSaved();closeModal();alert('Event created. Click "Set Active" to switch to it.');});
+function submitNewEvent(){
+  console.log('[submitNewEvent] called');
+  try {
+    var name=document.getElementById('ne_name').value.trim();
+    var start=document.getElementById('ne_start').value;
+    var end=document.getElementById('ne_end').value;
+    console.log('[submitNewEvent] inputs:', {name:name, start:start, end:end});
+    if(!name||!start||!end){alert('All fields required.');return;}
+    var eid='event_'+Date.now();
+    var newCfg={...DEFAULT_EVENT_CFG,name:name,startDate:start,endDate:end};
+    console.log('[submitNewEvent] writing to /events/'+eid+'/config');
+    dbWrite(DB.ref('/events/'+eid+'/config').set(newCfg),'create event config').then(function(){
+      console.log('[submitNewEvent] config saved, writing meta');
+      return dbWrite(DB.ref('/events_meta/'+eid).set({name:name,createdAt:new Date().toISOString()}),'create event meta');
+    }).then(function(){
+      console.log('[submitNewEvent] success — both writes complete');
+      showSaved();
+      closeModal();
+      alert('✅ Event created successfully. Click "Set Active" to switch to it.');
+    });
+  } catch(e) {
+    console.error('[submitNewEvent] sync error:', e);
+    alert('Error creating event: '+e.message);
+  }
 }
 
 // ── Settings ──────────────────────────────────────────────────────
@@ -1380,13 +1407,13 @@ function saveConfig(){
     slotDuration:parseInt(document.getElementById('c_dur').value)||60,
     venues:(c.venues||[]).map((v,i)=>({id:v.id,name:document.getElementById('v_name_'+i).value,capacity:parseInt(document.getElementById('v_cap_'+i).value)||50}))
   };
-  DB.ref('/events/'+ACTIVE_EID+'/config').set(newCfg).then(()=>{
-    return DB.ref('/events_meta/'+ACTIVE_EID+'/name').set(newCfg.name);
-  }).then(()=>{showSaved();alert('Settings saved.');}).catch(e=>alert(e.message));
+  dbWrite(DB.ref('/events/'+ACTIVE_EID+'/config').set(newCfg),'save settings').then(()=>{
+    return dbWrite(DB.ref('/events_meta/'+ACTIVE_EID+'/name').set(newCfg.name),'update event name');
+  }).then(()=>{showSaved();alert('Settings saved.');});
 }
-function addVenue(){var c=cfg()||{};var vs=[...(c.venues||[]),{id:'v'+Date.now(),name:'New Venue',capacity:50}];DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs).then(()=>{showSaved();renderConfig();});}
-function removeVenue(i){var c=cfg()||{};var vs=(c.venues||[]).filter((_,x)=>x!==i);if(!confirm('Remove this venue?'))return;DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs).then(()=>{showSaved();renderConfig();});}
-function resetBk(){if(!confirm('Delete ALL bookings for this event? Cannot be undone.'))return;DB.ref('/events/'+ACTIVE_EID+'/bookings').remove().then(()=>{showSaved();alert('Bookings deleted.');navigate('dashboard');});}
+function addVenue(){var c=cfg()||{};var vs=[...(c.venues||[]),{id:'v'+Date.now(),name:'New Venue',capacity:50}];dbWrite(DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs),'add venue').then(()=>{showSaved();renderConfig();});}
+function removeVenue(i){var c=cfg()||{};var vs=(c.venues||[]).filter((_,x)=>x!==i);if(!confirm('Remove this venue?'))return;dbWrite(DB.ref('/events/'+ACTIVE_EID+'/config/venues').set(vs),'remove venue').then(()=>{showSaved();renderConfig();});}
+function resetBk(){if(!confirm('Delete ALL bookings for this event? Cannot be undone.'))return;dbWrite(DB.ref('/events/'+ACTIVE_EID+'/bookings').remove(),'delete all bookings').then(()=>{showSaved();alert('Bookings deleted.');navigate('dashboard');});}
 
 // ═══════════════════════════════════════════════════════════════════
 // VIDEO SHOOTS
@@ -1615,19 +1642,19 @@ function submitVsBook(date,slotKey){
 
   var id='vs'+Date.now()+Math.random().toString(36).substr(2,5);
   var booking={
-    id, date, slotKey,
+    id:id, date:date, slotKey:slotKey,
     agencyName:agency, ownerName:owner, ownerPhone:ownerPh, agencyEmail:email,
     agentName:agent, agentPhone:agentPh,
     needsVideographer:needsVid, needsEditing:needsVid?needsEdit:false,
-    notes, bookedBy:CU.id, status:'confirmed',
+    notes:notes, bookedBy:CU.id, status:'confirmed',
     createdAt:new Date().toISOString()
   };
 
-  DB.ref('/video_bookings/'+id).set(booking).then(function(){
+  dbWrite(DB.ref('/video_bookings/'+id).set(booking),'book video shoot').then(function(){
     showSaved();
     closeModal();
     renderVideoShoots();
-  }).catch(function(e){alert('Error: '+e.message);});
+  });
 }
 
 // ── View booking ──────────────────────────────────────────────────
@@ -1674,7 +1701,7 @@ function viewVsBooking(id){
 
 function cancelVsBook(id){
   if(!confirm('Cancel this video shoot booking?'))return;
-  DB.ref('/video_bookings/'+id+'/status').set('cancelled').then(function(){showSaved();closeModal();});
+  dbWrite(DB.ref('/video_bookings/'+id+'/status').set('cancelled'),'cancel video shoot').then(function(){showSaved();closeModal();});
 }
 
 // ── Export ────────────────────────────────────────────────────────
